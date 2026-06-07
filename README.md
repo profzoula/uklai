@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Briclix — E-commerce Platform
+
+A modern e-commerce website built with Next.js, styled after [PrebuiltUI Design](https://design.prebuiltui.com/), with Supabase database, Stripe payments, and a structured admin dashboard.
+
+## Features
+
+- **Storefront** — Hero, categories, featured products, testimonials, newsletter
+- **Shopping Cart** — Persistent cart with Zustand
+- **Stripe Checkout** — Secure payment processing
+- **Supabase** — Database, auth, and row-level security
+- **Admin Dashboard** — Products, orders, categories, customers, settings
+- **Mock Data** — Works out of the box without configuration
+
+## Tech Stack
+
+- Next.js 16 (App Router)
+- TypeScript
+- Tailwind CSS
+- Supabase (PostgreSQL + Auth)
+- Stripe
+- Zustand (cart state)
+- Lucide React (icons)
 
 ## Getting Started
 
-First, run the development server:
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Run development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) — the store works with mock data immediately.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Configure Supabase (optional)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Create a project at [supabase.com](https://supabase.com)
+2. Run `supabase/schema.sql` in the SQL Editor
+3. Copy `.env.local.example` to `.env.local` and add your keys
 
-## Learn More
+To make a user admin:
 
-To learn more about Next.js, take a look at the following resources:
+```sql
+UPDATE profiles SET is_admin = true WHERE email = 'your@email.com';
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 4. Configure Stripe (optional)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Create an account at [stripe.com](https://stripe.com)
+2. Add your keys to `.env.local`
+3. Set up webhook endpoint: `https://your-domain.com/api/webhooks/stripe`
+4. Listen for `checkout.session.completed` events
 
-## Deploy on Vercel
+For local testing:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── (store)/          # Public storefront
+│   │   ├── page.tsx      # Homepage
+│   │   ├── shop/         # Product listing
+│   │   ├── products/     # Product detail
+│   │   ├── cart/         # Shopping cart
+│   │   └── checkout/     # Success page
+│   ├── admin/            # Admin dashboard
+│   │   ├── products/     # Product management
+│   │   ├── orders/       # Order management
+│   │   ├── categories/   # Category management
+│   │   └── settings/     # Store settings
+│   ├── auth/             # Login & signup
+│   └── api/              # API routes
+├── components/
+│   ├── store/            # Storefront components
+│   └── admin/            # Admin components
+├── lib/                  # Utilities & data fetching
+├── store/                # Zustand stores
+└── types/                # TypeScript types
+supabase/
+└── schema.sql            # Database schema + seed data
+```
+
+## Pages
+
+| Route | Description |
+|-------|-------------|
+| `/` | Homepage with hero, categories, products |
+| `/shop` | All products with category filters |
+| `/products/[slug]` | Product detail page |
+| `/cart` | Shopping cart & checkout |
+| `/admin` | Admin dashboard overview |
+| `/admin/products` | Manage products |
+| `/admin/orders` | View orders |
+| `/auth/login` | User login |
+
+## License
+
+MIT
