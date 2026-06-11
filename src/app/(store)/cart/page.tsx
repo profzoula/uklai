@@ -19,6 +19,10 @@ export default function CartPage() {
   const [freeShipping, setFreeShipping] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState<
+    { id: string; label: string; description: string }[]
+  >([]);
+  const [paymentMethod, setPaymentMethod] = useState("stripe");
 
   const cartItems = items.map((item) => ({
     productId: item.product.id,
@@ -29,6 +33,17 @@ export default function CartPage() {
   }));
 
   const subtotal = getTotal();
+
+  useEffect(() => {
+    fetch("/api/store/payment-methods")
+      .then((res) => res.json())
+      .then((data) => {
+        const methods = Array.isArray(data.methods) ? data.methods : [];
+        setPaymentMethods(methods);
+        if (methods[0]?.id) setPaymentMethod(methods[0].id);
+      })
+      .catch(() => setPaymentMethods([]));
+  }, []);
 
   useEffect(() => {
     if (!items.length) return;
@@ -112,6 +127,7 @@ export default function CartPage() {
         body: JSON.stringify({
           items: cartItems,
           couponCode: appliedCoupon ?? undefined,
+          paymentMethod,
         }),
       });
       const data = await res.json();
@@ -287,6 +303,43 @@ export default function CartPage() {
             )}
           </div>
 
+          {paymentMethods.length > 0 && (
+            <div className="mb-5">
+              <p className="text-sm font-medium text-slate-700 mb-2">
+                Payment method
+              </p>
+              <div className="space-y-2">
+                {paymentMethods.map((method) => (
+                  <label
+                    key={method.id}
+                    className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                      paymentMethod === method.id
+                        ? "border-primary bg-primary-light/40"
+                        : "border-slate-200 hover:bg-slate-50"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment-method"
+                      value={method.id}
+                      checked={paymentMethod === method.id}
+                      onChange={() => setPaymentMethod(method.id)}
+                      className="mt-1"
+                    />
+                    <span>
+                      <span className="block text-sm font-medium text-slate-900">
+                        {method.label}
+                      </span>
+                      <span className="block text-xs text-slate-500 mt-0.5">
+                        {method.description}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
               <span className="text-slate-500">Subtotal</span>
@@ -328,10 +381,14 @@ export default function CartPage() {
 
           <button
             onClick={handleCheckout}
-            disabled={loading}
+            disabled={loading || paymentMethods.length === 0}
             className="w-full mt-6 bg-primary text-white py-4 rounded-xl font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
           >
-            {loading ? "Processing..." : "Proceed to Checkout"}
+            {loading
+              ? "Processing..."
+              : paymentMethod === "cod"
+                ? "Place order (pay on delivery)"
+                : "Proceed to Checkout"}
           </button>
 
           {checkoutError && (

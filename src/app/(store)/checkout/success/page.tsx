@@ -1,17 +1,19 @@
 import Link from "next/link";
 import { CheckCircle, ArrowRight, Download } from "lucide-react";
 import { ClearCartOnSuccess } from "@/components/store/ClearCartOnSuccess";
-import { getOrderByStripeSession } from "@/lib/data";
+import { getOrderById, getOrderByStripeSession } from "@/lib/data";
 
 type Props = {
-  searchParams: Promise<{ session_id?: string }>;
+  searchParams: Promise<{ session_id?: string; order_id?: string; method?: string }>;
 };
 
 export default async function CheckoutSuccessPage({ searchParams }: Props) {
   const params = await searchParams;
-  const order = params.session_id
-    ? await getOrderByStripeSession(params.session_id)
-    : null;
+  const order = params.order_id
+    ? await getOrderById(params.order_id)
+    : params.session_id
+      ? await getOrderByStripeSession(params.session_id)
+      : null;
 
   const digitalItems =
     order?.order_items?.filter(
@@ -26,8 +28,9 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
         Order Confirmed!
       </h1>
       <p className="text-slate-600 mb-2">
-        Thank you for your purchase. Your order has been received and is being
-        processed.
+        {params.method === "cod"
+          ? "Your order has been placed. Please have payment ready when your order is delivered."
+          : "Thank you for your purchase. Your order has been received and is being processed."}
       </p>
       {order && (
         <p className="text-sm text-slate-500 mb-4">

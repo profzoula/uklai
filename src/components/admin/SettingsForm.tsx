@@ -11,9 +11,11 @@ import {
 } from "lucide-react";
 import type { AllStoreSettings } from "@/lib/store-settings-types";
 import { US_STATES, COUNTRIES } from "@/lib/store-settings-types";
+import { PaymentProvidersPanel } from "@/components/admin/PaymentProvidersPanel";
 
 type Props = {
   initialSettings: AllStoreSettings;
+  stripeConfigured?: boolean;
 };
 
 type SettingsTab = "store" | "payment" | "shipping" | "tax" | "notifications";
@@ -91,7 +93,10 @@ function Panel({
   );
 }
 
-export function SettingsForm({ initialSettings }: Props) {
+export function SettingsForm({
+  initialSettings,
+  stripeConfigured = false,
+}: Props) {
   const [activeTab, setActiveTab] = useState<SettingsTab>("store");
   const [settings, setSettings] = useState<AllStoreSettings>(initialSettings);
   const [loading, setLoading] = useState(false);
@@ -364,83 +369,13 @@ export function SettingsForm({ initialSettings }: Props) {
           )}
 
           {activeTab === "payment" && (
-            <Panel
-              title="Payment settings"
-              subtitle="Configure the available payment methods."
-            >
-              <div>
-                <RequiredLabel>Currency</RequiredLabel>
-                <select
-                  value={settings.payment.currency}
-                  onChange={(e) =>
-                    updatePayment({ currency: e.target.value })
-                  }
-                  className={inputClass}
-                >
-                  <option value="USD">USD — US Dollar</option>
-                  <option value="CAD">CAD — Canadian Dollar</option>
-                  <option value="EUR">EUR — Euro</option>
-                  <option value="HTG">HTG — Haitian Gourde</option>
-                </select>
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <label className="flex items-start gap-3 p-4 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50">
-                  <input
-                    type="checkbox"
-                    checked={settings.payment.stripe_enabled}
-                    onChange={(e) =>
-                      updatePayment({ stripe_enabled: e.target.checked })
-                    }
-                    className="mt-0.5"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">Stripe</p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Credit & debit cards. API keys are configured in{" "}
-                      <code className="text-xs bg-slate-100 px-1 rounded">
-                        .env.local
-                      </code>
-                    </p>
-                  </div>
-                </label>
-
-                <label className="flex items-start gap-3 p-4 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50">
-                  <input
-                    type="checkbox"
-                    checked={settings.payment.paypal_enabled}
-                    onChange={(e) =>
-                      updatePayment({ paypal_enabled: e.target.checked })
-                    }
-                    className="mt-0.5"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">PayPal</p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Accept PayPal checkout (requires PayPal integration)
-                    </p>
-                  </div>
-                </label>
-
-                <label className="flex items-start gap-3 p-4 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50">
-                  <input
-                    type="checkbox"
-                    checked={settings.payment.cod_enabled}
-                    onChange={(e) =>
-                      updatePayment({ cod_enabled: e.target.checked })
-                    }
-                    className="mt-0.5"
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">
-                      Cash on delivery
-                    </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Allow customers to pay when the order is delivered
-                    </p>
-                  </div>
-                </label>
-              </div>
+            <Panel title="Payment settings">
+              <PaymentProvidersPanel
+                payment={settings.payment}
+                storeCountry={settings.store.country}
+                stripeConfigured={stripeConfigured}
+                onChange={updatePayment}
+              />
             </Panel>
           )}
 
