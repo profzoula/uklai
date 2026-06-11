@@ -15,6 +15,9 @@ export type PaymentSettings = {
   stripe_enabled: boolean;
   paypal_enabled: boolean;
   cod_enabled: boolean;
+  /** Buy now, pay later via Stripe Checkout (also enable in Stripe Dashboard). */
+  affirm_enabled: boolean;
+  afterpay_enabled: boolean;
 };
 
 export type ShippingSettings = {
@@ -76,6 +79,8 @@ export const defaultStoreSettings: AllStoreSettings = {
     stripe_enabled: true,
     paypal_enabled: false,
     cod_enabled: false,
+    affirm_enabled: false,
+    afterpay_enabled: false,
   },
   shipping: {
     flat_rate: "5.99",

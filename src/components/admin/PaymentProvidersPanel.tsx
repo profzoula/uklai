@@ -191,6 +191,70 @@ export function PaymentProvidersPanel({
 
         <ProviderRow
           icon={
+            <div className="w-11 h-11 rounded-lg bg-[#0fa4e8] text-white flex items-center justify-center text-[10px] font-extrabold tracking-tight">
+              affirm
+            </div>
+          }
+          title="Affirm"
+          badges={
+            <>
+              {status.affirm.active && (
+                <StatusBadge tone="active">Active</StatusBadge>
+              )}
+              {payment.affirm_enabled && (
+                <StatusBadge tone="muted">Via Stripe</StatusBadge>
+              )}
+            </>
+          }
+          description="Buy now, pay later in installments. Enable in Stripe Dashboard → Settings → Payment methods, then toggle on here."
+          extra={
+            <p className="text-[11px] text-slate-500 mt-2 leading-relaxed">
+              US only · USD · typical range $50–$30,000 · domestic customers
+            </p>
+          }
+          action={
+            <Toggle
+              checked={payment.affirm_enabled}
+              onChange={(checked) => onChange({ affirm_enabled: checked })}
+              label="Enable Affirm"
+            />
+          }
+        />
+
+        <ProviderRow
+          icon={
+            <div className="w-11 h-11 rounded-lg bg-[#b2fce4] text-[#00453a] flex items-center justify-center text-[9px] font-extrabold tracking-tight">
+              Afterpay
+            </div>
+          }
+          title="Afterpay"
+          badges={
+            <>
+              {status.afterpay.active && (
+                <StatusBadge tone="active">Active</StatusBadge>
+              )}
+              {payment.afterpay_enabled && (
+                <StatusBadge tone="muted">Via Stripe</StatusBadge>
+              )}
+            </>
+          }
+          description="Split payments into 4 interest-free installments. Enable in Stripe Dashboard, then toggle on here."
+          extra={
+            <p className="text-[11px] text-slate-500 mt-2 leading-relaxed">
+              US · USD · order limits apply · shown at Stripe Checkout when eligible
+            </p>
+          }
+          action={
+            <Toggle
+              checked={payment.afterpay_enabled}
+              onChange={(checked) => onChange({ afterpay_enabled: checked })}
+              label="Enable Afterpay"
+            />
+          }
+        />
+
+        <ProviderRow
+          icon={
             <div className="w-11 h-11 rounded-lg bg-[#003087] text-white flex items-center justify-center text-xs font-bold">
               PP
             </div>

@@ -53,6 +53,19 @@ export function getPaymentProviderStatus(
       active: false,
       needsSetup: payment.paypal_enabled,
     },
+    affirm: {
+      enabled: payment.affirm_enabled,
+      configured: stripeConfigured,
+      active: payment.affirm_enabled && payment.stripe_enabled && stripeConfigured,
+      needsSetup: payment.affirm_enabled && !stripeConfigured,
+    },
+    afterpay: {
+      enabled: payment.afterpay_enabled,
+      configured: stripeConfigured,
+      active:
+        payment.afterpay_enabled && payment.stripe_enabled && stripeConfigured,
+      needsSetup: payment.afterpay_enabled && !stripeConfigured,
+    },
     cod: {
       enabled: payment.cod_enabled,
       configured: true,

@@ -10,6 +10,10 @@ import { calculateCheckoutTotals } from "@/lib/checkout-totals";
 import { isSupabaseServerLive } from "@/lib/supabase/config";
 import { resolveCheckoutPaymentMethod } from "@/lib/payment-methods";
 import { fulfillOrderItems } from "@/lib/fulfill-order";
+import {
+  getStripeCheckoutPaymentMethodTypes,
+  stripeCheckoutCurrency,
+} from "@/lib/stripe-bnpl";
 
 type CheckoutItem = {
   productId: string;
@@ -165,9 +169,14 @@ export async function POST(request: Request) {
       );
     }
 
+    const currency = stripeCheckoutCurrency(settings.payment.currency);
+    const paymentMethodTypes = getStripeCheckoutPaymentMethodTypes(
+      settings.payment
+    );
+
     const lineItems = items.map((item) => ({
       price_data: {
-        currency: "usd",
+        currency,
         product_data: {
           name: item.name,
           images: item.image ? [item.image] : [],
@@ -180,7 +189,7 @@ export async function POST(request: Request) {
     if (totals.discount > 0 && appliedCouponCode) {
       lineItems.push({
         price_data: {
-          currency: "usd",
+          currency,
           product_data: {
             name: `Discount (${appliedCouponCode})`,
             images: [],
@@ -194,7 +203,7 @@ export async function POST(request: Request) {
     if (totals.shipping > 0) {
       lineItems.push({
         price_data: {
-          currency: "usd",
+          currency,
           product_data: { name: "Shipping", images: [] },
           unit_amount: Math.round(totals.shipping * 100),
         },
@@ -205,7 +214,7 @@ export async function POST(request: Request) {
     if (totals.tax > 0 && process.env.STRIPE_TAX_ENABLED !== "true") {
       lineItems.push({
         price_data: {
-          currency: "usd",
+          currency,
           product_data: {
             name: `Sales tax (${settings.tax.default_rate}%)`,
             images: [],
@@ -226,6 +235,7 @@ export async function POST(request: Request) {
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/cart`,
       customer_email: user?.email ?? undefined,
       shipping_address_collection: { allowed_countries: ["US"] },
+      payment_method_types: paymentMethodTypes,
       ...(useStripeTax ? { automatic_tax: { enabled: true } } : {}),
       metadata: {
         user_id: user?.id ?? "",
