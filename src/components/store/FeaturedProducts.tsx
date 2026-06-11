@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import type { Product } from "@/types/database";
 import { formatPrice } from "@/lib/utils";
 
-const VIEW_ALL_HREF = "/shop?featured=true";
+const VIEW_ALL_HREF = "/shop?collection=featured";
 
 type Props = {
   products: Product[];

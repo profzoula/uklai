@@ -15,18 +15,34 @@ import {
 import { getStoreSettings } from "@/lib/store-settings";
 
 export default async function HomePage() {
-  const [categories, featured, bestSellers, newArrivals, dealOfDay, bestMeta, newMeta, dealMeta, settings] =
-    await Promise.all([
-      getCategories(),
-      getProducts({ featured: true, limit: 10 }),
-      getProductsByCollectionSlug("best-sellers", 12),
-      getProductsByCollectionSlug("new-arrivals", 12),
-      getProductsByCollectionSlug("deal-of-the-day", 12),
-      getCollectionBySlug("best-sellers"),
-      getCollectionBySlug("new-arrivals"),
-      getCollectionBySlug("deal-of-the-day"),
-      getStoreSettings(),
-    ]);
+  const [
+    categories,
+    featuredFromCollection,
+    bestSellers,
+    newArrivals,
+    dealOfDay,
+    featuredMeta,
+    bestMeta,
+    newMeta,
+    dealMeta,
+    settings,
+  ] = await Promise.all([
+    getCategories(),
+    getProductsByCollectionSlug("featured", 12),
+    getProductsByCollectionSlug("best-sellers", 12),
+    getProductsByCollectionSlug("new-arrivals", 12),
+    getProductsByCollectionSlug("deal-of-the-day", 12),
+    getCollectionBySlug("featured"),
+    getCollectionBySlug("best-sellers"),
+    getCollectionBySlug("new-arrivals"),
+    getCollectionBySlug("deal-of-the-day"),
+    getStoreSettings(),
+  ]);
+
+  const featured =
+    featuredFromCollection.length > 0
+      ? featuredFromCollection
+      : await getProducts({ featured: true, limit: 12 });
 
   const promo = settings.homepage?.promo;
 
@@ -43,7 +59,11 @@ export default async function HomePage() {
         title={bestMeta?.name ?? "Best Sellers"}
         headline={bestMeta?.description}
       />
-      <FeaturedProducts products={featured} />
+      <FeaturedProducts
+        products={featured}
+        title={featuredMeta?.name ?? "Featured Products"}
+        description={featuredMeta?.description}
+      />
       <NewArrivalsSection
         products={newArrivals}
         title={newMeta?.name ?? "New Arrivals"}

@@ -271,7 +271,8 @@ INSERT INTO collections (name, slug, description) VALUES
   ('Summer Sale', 'summer-sale', 'Hot deals for the summer season'),
   ('New Arrivals', 'new-arrivals', 'Latest products just landed'),
   ('Best Sellers', 'best-sellers', 'Our most popular items'),
-  ('Deal of the Day', 'deal-of-the-day', 'Limited-time daily deals with the biggest savings')
+  ('Deal of the Day', 'deal-of-the-day', 'Limited-time daily deals with the biggest savings'),
+  ('Featured Products', 'featured', 'Curated products on the homepage Featured section')
 ON CONFLICT (slug) DO NOTHING;
 
 INSERT INTO attributes (name, slug, type, values) VALUES

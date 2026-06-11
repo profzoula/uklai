@@ -381,6 +381,12 @@ export async function getCollectionBySlug(
       slug: "deal-of-the-day",
       description: "Limited-time daily deals — biggest savings while they last.",
     },
+    featured: {
+      id: "featured",
+      name: "Featured Products",
+      slug: "featured",
+      description: "Curated products on the homepage Featured section",
+    },
   };
 
   const supabase = await getDataSupabase();

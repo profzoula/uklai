@@ -12,7 +12,8 @@
     "sync:profiles": "node scripts/sync-profiles.mjs",
     "migrate:legacy": "node scripts/migrate-legacy-catalog.mjs",
     "db:collection-order": "node scripts/add-collection-sort-order.mjs",
-    "migrate:orders": "node scripts/migrate-legacy-orders.mjs"
+    "migrate:orders": "node scripts/migrate-legacy-orders.mjs",
+    "setup:featured": "node scripts/setup-featured-collection.mjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.7.0",
