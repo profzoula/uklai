@@ -57,7 +57,10 @@ function BestSellerCard({ product }: { product: Product }) {
 
       <div className="px-3 pt-2 pb-3 flex flex-col flex-1 text-left">
         <Link href={`/products/${product.slug}`}>
-          <h3 className="text-xs sm:text-sm font-medium text-primary line-clamp-2 min-h-10 leading-snug hover:underline">
+          <h3
+            className="text-[11px] sm:text-xs font-medium text-primary line-clamp-3 leading-[1.35] h-[3.65rem] overflow-hidden hover:underline"
+            title={product.name}
+          >
             {product.name}
           </h3>
         </Link>

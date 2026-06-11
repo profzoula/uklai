@@ -57,7 +57,7 @@ function DealProductCard({ product }: { product: Product }) {
   const outOfStock = product.stock <= 0;
 
   return (
-    <article className="flex-shrink-0 w-[168px] sm:w-[180px] bg-white border border-slate-200 rounded-lg overflow-hidden flex flex-col">
+    <article className="flex-shrink-0 w-[176px] sm:w-[196px] bg-white border border-slate-200 rounded-lg overflow-hidden flex flex-col">
       <Link href={`/products/${product.slug}`} className="relative block p-3 pb-0">
         {save !== null && (
           <span className="absolute top-2 left-2 z-10 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm">
@@ -85,8 +85,11 @@ function DealProductCard({ product }: { product: Product }) {
       </Link>
 
       <div className="px-3 pt-2 pb-3 flex flex-col flex-1">
-        <Link href={`/products/${product.slug}`}>
-          <h3 className="text-xs sm:text-sm font-medium text-slate-900 line-clamp-2 min-h-[2.5rem] leading-snug hover:text-primary">
+        <Link href={`/products/${product.slug}`} className="block overflow-hidden">
+          <h3
+            className="text-[11px] sm:text-xs font-medium text-slate-900 line-clamp-3 leading-[1.35] h-[3.65rem] hover:text-primary"
+            title={product.name}
+          >
             {product.name}
           </h3>
         </Link>
