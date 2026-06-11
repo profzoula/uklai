@@ -25,7 +25,7 @@ export default async function AccountLayout({
       </div>
 
       <div className="grid lg:grid-cols-[220px_1fr] gap-8">
-        <AccountNav />
+        <AccountNav isAdmin={profile?.is_admin === true} />
         <div>{children}</div>
       </div>
 

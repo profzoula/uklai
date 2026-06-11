@@ -36,18 +36,34 @@ export async function getUser() {
   return user;
 }
 
+function getAdminEmails(): string[] {
+  return (process.env.ADMIN_EMAILS ?? "uklaistore@gmail.com,profzoula@gmail.com")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 export async function getProfile() {
-  const supabase = await createClient();
   const user = await getUser();
   if (!user) return null;
 
+  const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .maybeSingle();
 
-  if (profile) return profile;
+  const shouldBeAdmin = getAdminEmails().includes(
+    user.email?.toLowerCase() ?? ""
+  );
+
+  if (profile) {
+    if (shouldBeAdmin && !profile.is_admin) {
+      return ensureProfileForUser(user);
+    }
+    return profile;
+  }
 
   return ensureProfileForUser(user);
 }
@@ -57,12 +73,8 @@ async function ensureProfileForUser(user: {
   email?: string | null;
   user_metadata?: Record<string, unknown>;
 }) {
-  const adminEmails = (process.env.ADMIN_EMAILS ?? "uklaistore@gmail.com,profzoula@gmail.com")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
   const email = user.email?.toLowerCase() ?? "";
-  const isAdmin = adminEmails.includes(email);
+  const isAdmin = getAdminEmails().includes(email);
 
   const row = {
     id: user.id,

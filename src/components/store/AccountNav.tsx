@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Package, Download, LogOut } from "lucide-react";
+import { Package, Download, LogOut, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -13,7 +13,11 @@ const links = [
   { href: "/account/downloads", label: "Downloads", icon: Download },
 ];
 
-export function AccountNav() {
+type Props = {
+  isAdmin?: boolean;
+};
+
+export function AccountNav({ isAdmin = false }: Props) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -28,6 +32,15 @@ export function AccountNav() {
 
   return (
     <nav className="space-y-1">
+      {isAdmin && (
+        <Link
+          href="/admin"
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold bg-primary text-white hover:bg-primary-dark transition-colors mb-2"
+        >
+          <LayoutDashboard className="w-4 h-4" />
+          Admin dashboard
+        </Link>
+      )}
       {links.map(({ href, label, icon: Icon }) => (
         <Link
           key={href}
