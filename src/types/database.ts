@@ -50,6 +50,22 @@ export type Product = {
   created_at: string;
   updated_at: string;
   categories?: Category;
+  product_variants?: ProductVariant[];
+};
+
+export type ProductVariant = {
+  id: string;
+  product_id: string;
+  sku: string | null;
+  color: string | null;
+  image_url: string | null;
+  price: number;
+  compare_at_price: number | null;
+  stock: number;
+  sort_order: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
 };
 
 export type OrderStatus =

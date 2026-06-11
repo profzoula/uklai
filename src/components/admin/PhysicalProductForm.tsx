@@ -23,6 +23,7 @@ import { slugify } from "@/lib/utils";
 import type { Attribute } from "@/lib/admin-data-types";
 import type { Category, Product } from "@/types/database";
 import { ProductMediaGallery } from "@/components/admin/ProductMediaGallery";
+import { ProductVariantsPanel } from "@/components/admin/ProductVariantsPanel";
 
 type Props = {
   product?: Product;
@@ -531,6 +532,25 @@ export function PhysicalProductForm({ product }: Props) {
                 onChange={handleMediaChange}
               />
             </Panel>
+
+            {isEdit && product?.id ? (
+              <ProductVariantsPanel
+                productId={product.id}
+                colorOptions={colorAttr?.values ?? []}
+                defaultPrice={form.price}
+              />
+            ) : (
+              <Panel
+                title="Product variants"
+                subtitle="SKU, color, photo, price, and stock per variant."
+              >
+                <p className="text-sm text-slate-500">
+                  Save the product first, then return to this page to add color
+                  variants (e.g. White, Black) with their own SKU, image, price,
+                  and stock.
+                </p>
+              </Panel>
+            )}
 
             <Panel title="SEO">
               <div>
