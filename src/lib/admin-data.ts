@@ -21,6 +21,8 @@ import type {
   AdminDashboardTrends,
 } from "@/lib/admin-data-types";
 
+const PAID_ORDER_STATUSES = ["paid", "processing", "shipped", "delivered"];
+
 export type {
   Collection,
   Attribute,
@@ -340,7 +342,7 @@ function sumRevenueInRange(
       return (
         created >= start &&
         created < end &&
-        (order.status === "paid" || order.status === "delivered")
+        PAID_ORDER_STATUSES.includes(order.status)
       );
     })
     .reduce((sum, order) => sum + Number(order.total), 0);
@@ -581,7 +583,7 @@ export async function getAttributes(): Promise<Attribute[]> {
   if (!supabase) return mockAttributes;
 
   const { data } = await supabase.from("attributes").select("*").order("name");
-  if (!data?.length) return mockAttributes;
+  if (!data?.length) return useMockFallback() ? mockAttributes : [];
 
   return data.map((row) => ({
     id: row.id,
@@ -607,7 +609,7 @@ export async function getCoupons(): Promise<Coupon[]> {
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (!data?.length) return mockCoupons;
+  if (!data?.length) return useMockFallback() ? mockCoupons : [];
 
   return data.map((row) => ({
     id: row.id,
@@ -639,7 +641,7 @@ export async function getCmsPages(): Promise<CmsPage[]> {
     .select("*")
     .order("updated_at", { ascending: false });
 
-  if (!data?.length) return mockPages;
+  if (!data?.length) return useMockFallback() ? mockPages : [];
 
   return data.map((row) => ({
     id: row.id,
@@ -665,7 +667,7 @@ export async function getWidgets(): Promise<Widget[]> {
     .select("*")
     .order("updated_at", { ascending: false });
 
-  if (!data?.length) return mockWidgets;
+  if (!data?.length) return useMockFallback() ? mockWidgets : [];
 
   return data.map((row) => ({
     id: row.id,
@@ -688,36 +690,73 @@ export async function getCustomers() {
     return [];
   }
 
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, email, full_name, created_at")
-    .order("created_at", { ascending: false });
+  const [{ data: profiles }, { data: orders }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id, email, full_name, created_at")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("orders")
+      .select(
+        "id, user_id, customer_email, shipping_name, total, status, created_at"
+      ),
+  ]);
 
-  if (!profiles?.length) return [];
+  const orderList = orders ?? [];
+  const customers = new Map<
+    string,
+    {
+      id: string;
+      full_name: string;
+      email: string;
+      orders_count: number;
+      total_spent: number;
+      created_at: string;
+    }
+  >();
 
-  const { data: orders } = await supabase
-    .from("orders")
-    .select("user_id, total, status");
-
-  return profiles.map((profile) => {
-    const userOrders = (orders ?? []).filter(
-      (o) => o.user_id === profile.id
-    );
+  for (const profile of profiles ?? []) {
+    const email = profile.email.toLowerCase();
+    const userOrders = orderList.filter((o) => o.user_id === profile.id);
     const total_spent = userOrders
-      .filter((o) =>
-        ["paid", "processing", "shipped", "delivered"].includes(o.status)
-      )
+      .filter((o) => PAID_ORDER_STATUSES.includes(o.status))
       .reduce((sum, o) => sum + Number(o.total), 0);
 
-    return {
+    customers.set(email, {
       id: profile.id,
       full_name: profile.full_name ?? "Customer",
       email: profile.email,
       orders_count: userOrders.length,
       total_spent,
       created_at: profile.created_at,
-    };
-  });
+    });
+  }
+
+  for (const order of orderList) {
+    const email = order.customer_email?.toLowerCase();
+    if (!email || customers.has(email)) continue;
+
+    const guestOrders = orderList.filter(
+      (o) => o.customer_email?.toLowerCase() === email
+    );
+    const total_spent = guestOrders
+      .filter((o) => PAID_ORDER_STATUSES.includes(o.status))
+      .reduce((sum, o) => sum + Number(o.total), 0);
+
+    customers.set(email, {
+      id: `guest:${email}`,
+      full_name: order.shipping_name ?? email.split("@")[0],
+      email: order.customer_email!,
+      orders_count: guestOrders.length,
+      total_spent,
+      created_at: order.created_at,
+    });
+  }
+
+  return [...customers.values()].sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 }
 
 export async function getCustomerById(id: string) {
@@ -740,9 +779,7 @@ export async function getCustomerById(id: string) {
 
   const orderList = (orders ?? []) as import("@/types/database").Order[];
   const total_spent = orderList
-    .filter((o) =>
-      ["paid", "processing", "shipped", "delivered"].includes(o.status)
-    )
+    .filter((o) => PAID_ORDER_STATUSES.includes(o.status))
     .reduce((sum, o) => sum + Number(o.total), 0);
 
   return {

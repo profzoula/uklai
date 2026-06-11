@@ -9,21 +9,30 @@ export default async function AdminCustomersPage() {
   return (
     <AdminTable
       title="Customers"
-      description={`View and manage registered customers (${customers.length} customers)`}
+      description={`Registered accounts and guest buyers (${customers.length} customers)`}
       data={customers}
-      emptyMessage="No customers yet. Customers will appear here once users register via Supabase Auth."
+      emptyMessage="No customers yet. They appear here after sign-up or checkout."
       columns={[
         {
           key: "name",
           header: "Customer",
           render: (row) => (
             <div>
-              <Link
-                href={`/admin/customers/${row.id}`}
-                className="font-medium text-sm text-primary hover:underline"
-              >
-                {row.full_name}
-              </Link>
+              {String(row.id).startsWith("guest:") ? (
+                <p className="font-medium text-sm text-slate-900">
+                  {row.full_name}
+                  <span className="ml-2 text-xs font-normal text-slate-400">
+                    Guest
+                  </span>
+                </p>
+              ) : (
+                <Link
+                  href={`/admin/customers/${row.id}`}
+                  className="font-medium text-sm text-primary hover:underline"
+                >
+                  {row.full_name}
+                </Link>
+              )}
               <p className="text-xs text-slate-400">{row.email}</p>
             </div>
           ),

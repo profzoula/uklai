@@ -521,8 +521,14 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   ]);
 
   const orders = ordersRes.data ?? [];
+  const revenueStatuses = new Set([
+    "paid",
+    "processing",
+    "shipped",
+    "delivered",
+  ]);
   const totalRevenue = orders
-    .filter((o) => o.status === "paid" || o.status === "delivered")
+    .filter((o) => revenueStatuses.has(o.status))
     .reduce((sum, o) => sum + Number(o.total), 0);
 
   return {

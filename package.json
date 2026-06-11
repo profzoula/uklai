@@ -11,7 +11,8 @@
     "import:aliexpress": "node scripts/import-aliexpress-csv.mjs",
     "sync:profiles": "node scripts/sync-profiles.mjs",
     "migrate:legacy": "node scripts/migrate-legacy-catalog.mjs",
-    "db:collection-order": "node scripts/add-collection-sort-order.mjs"
+    "db:collection-order": "node scripts/add-collection-sort-order.mjs",
+    "migrate:orders": "node scripts/migrate-legacy-orders.mjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.7.0",
