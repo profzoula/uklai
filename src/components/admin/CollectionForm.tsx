@@ -234,8 +234,27 @@ export function CollectionForm({ collection, initialProducts = [] }: Props) {
                 className={inputClass}
                 placeholder="best-sellers"
               />
-              <p className="text-xs text-slate-400 mt-1">
-                Used in URLs: /shop?collection={form.slug || "code"}
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                Store URL: /shop?collection={form.slug || "code"}
+                <br />
+                Homepage sections use these codes:{" "}
+                <span className="font-medium text-slate-700">
+                  featured
+                </span>
+                ,{" "}
+                <span className="font-medium text-slate-700">
+                  best-sellers
+                </span>
+                ,{" "}
+                <span className="font-medium text-slate-700">
+                  new-arrivals
+                </span>
+                ,{" "}
+                <span className="font-medium text-slate-700">
+                  deal-of-the-day
+                </span>
+                . Products must be <strong>Active</strong> and you must click{" "}
+                <strong>Save</strong> after adding them.
               </p>
             </div>
             <div>

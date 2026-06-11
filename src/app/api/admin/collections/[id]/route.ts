@@ -15,13 +15,23 @@ async function syncProducts(collectionId: string, productIds: string[]) {
     .eq("collection_id", collectionId);
 
   if (productIds.length) {
-    const { error } = await supabase.from("collection_products").insert(
-      productIds.map((product_id, sort_order) => ({
-        collection_id: collectionId,
-        product_id,
-        sort_order,
-      }))
-    );
+    const rows = productIds.map((product_id, sort_order) => ({
+      collection_id: collectionId,
+      product_id,
+      sort_order,
+    }));
+
+    let { error } = await supabase.from("collection_products").insert(rows);
+
+    if (error?.message?.includes("sort_order")) {
+      ({ error } = await supabase.from("collection_products").insert(
+        productIds.map((product_id) => ({
+          collection_id: collectionId,
+          product_id,
+        }))
+      ));
+    }
+
     if (error) return { error: error.message };
   }
 

@@ -14,6 +14,8 @@ import {
 } from "@/lib/data";
 import { getStoreSettings } from "@/lib/store-settings";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const [
     categories,

@@ -543,22 +543,19 @@ export async function getCollectionWithProducts(id: string): Promise<{
 
   if (!row) return null;
 
-  const { data: links } = await supabase
-    .from("collection_products")
-    .select("product_id, sort_order")
-    .eq("collection_id", id)
-    .order("sort_order", { ascending: true });
+  const { fetchCollectionProductLinks, orderByCollectionLinks } =
+    await import("@/lib/collection-products");
+  const links = await fetchCollectionProductLinks(supabase, id);
 
   let products: import("@/lib/admin-data-types").CollectionProductRow[] = [];
 
-  if (links?.length) {
+  if (links.length) {
     const ids = links.map((l) => l.product_id);
     const { data: productRows } = await supabase
       .from("products")
       .select("id, name, slug, sku, price, image_url")
       .in("id", ids);
 
-    const { orderByCollectionLinks } = await import("@/lib/collection-products");
     products = orderByCollectionLinks(
       (productRows ?? []) as import("@/lib/admin-data-types").CollectionProductRow[],
       links

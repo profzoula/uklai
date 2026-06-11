@@ -4,6 +4,7 @@ import {
   getCategories,
   getProductsByCollectionSlug,
   getCollectionBySlug,
+  getStoreCollections,
 } from "@/lib/data";
 import { ProductCard } from "@/components/store/ProductCard";
 
@@ -17,6 +18,14 @@ type Props = {
   }>;
 };
 
+export const dynamic = "force-dynamic";
+
+const BUILT_IN_COLLECTION_SLUGS = new Set([
+  "best-sellers",
+  "new-arrivals",
+  "deal-of-the-day",
+]);
+
 export default async function ShopPage({ searchParams }: Props) {
   const params = await searchParams;
   const isDeals = params.deals === "true";
@@ -24,10 +33,15 @@ export default async function ShopPage({ searchParams }: Props) {
   const searchQuery = params.q?.trim();
   const collectionSlug = params.collection?.trim();
 
-  const [categories, collectionMeta] = await Promise.all([
+  const [categories, collectionMeta, storeCollections] = await Promise.all([
     getCategories(),
     collectionSlug ? getCollectionBySlug(collectionSlug) : Promise.resolve(null),
+    getStoreCollections(),
   ]);
+
+  const customCollections = storeCollections.filter(
+    (c) => !BUILT_IN_COLLECTION_SLUGS.has(c.slug) && c.slug !== "featured"
+  );
 
   const products = collectionSlug
     ? await getProductsByCollectionSlug(collectionSlug, 50)
@@ -215,6 +229,25 @@ export default async function ShopPage({ searchParams }: Props) {
             }`}
           >
             {cat.name}
+          </Link>
+        ))}
+        {customCollections.map((col) => (
+          <Link
+            key={col.id}
+            href={filterHref({
+              category: null,
+              collection: col.slug,
+              deals: false,
+              featured: false,
+            })}
+            aria-current={collectionSlug === col.slug ? "page" : undefined}
+            className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+              collectionSlug === col.slug
+                ? "bg-primary text-white"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            {col.name}
           </Link>
         ))}
       </nav>

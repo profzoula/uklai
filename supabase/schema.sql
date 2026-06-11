@@ -186,6 +186,12 @@ CREATE TABLE IF NOT EXISTS collection_products (
 
 ALTER TABLE collection_products ADD COLUMN IF NOT EXISTS sort_order INT DEFAULT 0;
 
+ALTER TABLE collection_products ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Collection products viewable by everyone" ON collection_products FOR SELECT USING (true);
+CREATE POLICY "Admins manage collection products" ON collection_products FOR ALL USING (
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
+);
+
 -- Attributes
 CREATE TABLE IF NOT EXISTS attributes (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

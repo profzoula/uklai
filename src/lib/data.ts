@@ -405,6 +405,91 @@ export async function getCollectionBySlug(
   return fallbacks[slug] ?? null;
 }
 
+const HOMEPAGE_COLLECTION_SLUGS = new Set([
+  "featured",
+  "best-sellers",
+  "new-arrivals",
+  "deal-of-the-day",
+]);
+
+async function getAutoCollectionProducts(
+  supabase: NonNullable<Awaited<ReturnType<typeof getDataSupabase>>>,
+  collectionSlug: string,
+  limit: number
+): Promise<Product[]> {
+  let query = supabase
+    .from("products")
+    .select("*, categories(*)")
+    .eq("active", true)
+    .limit(limit);
+
+  if (collectionSlug === "best-sellers") {
+    query = query.order("review_count", { ascending: false });
+  } else if (collectionSlug === "new-arrivals") {
+    query = query.order("created_at", { ascending: false });
+  } else if (collectionSlug === "deal-of-the-day") {
+    query = query
+      .not("compare_at_price", "is", null)
+      .order("price", { ascending: true });
+  } else if (collectionSlug === "featured") {
+    query = query.eq("featured", true).order("created_at", { ascending: false });
+  } else {
+    return useMockFallback()
+      ? mockProductsForCollection(collectionSlug, limit)
+      : [];
+  }
+
+  const { data, error } = await query;
+  if (error || !data?.length) {
+    return useMockFallback()
+      ? mockProductsForCollection(collectionSlug, limit)
+      : [];
+  }
+
+  return data as Product[];
+}
+
+export async function getStoreCollections(): Promise<StoreCollection[]> {
+  const supabase = await getDataSupabase();
+  if (!supabase) {
+    return [
+      {
+        id: "featured",
+        name: "Featured Products",
+        slug: "featured",
+        description: null,
+      },
+      {
+        id: "best-sellers",
+        name: "Best Sellers",
+        slug: "best-sellers",
+        description: null,
+      },
+      {
+        id: "new-arrivals",
+        name: "New Arrivals",
+        slug: "new-arrivals",
+        description: null,
+      },
+      {
+        id: "deal-of-the-day",
+        name: "Deal of the Day",
+        slug: "deal-of-the-day",
+        description: null,
+      },
+    ];
+  }
+
+  const { data, error } = await supabase
+    .from("collections")
+    .select("id, name, slug, description")
+    .eq("active", true)
+    .order("name");
+
+  if (error || !data?.length) return [];
+  return data as StoreCollection[];
+}
+
 export async function getProductsByCollectionSlug(
   collectionSlug: string,
   limit = 10
@@ -422,13 +507,11 @@ export async function getProductsByCollectionSlug(
     .maybeSingle();
 
   if (collection) {
-    const { data: links } = await supabase
-      .from("collection_products")
-      .select("product_id, sort_order")
-      .eq("collection_id", collection.id)
-      .order("sort_order", { ascending: true });
+    const { fetchCollectionProductLinks, orderByCollectionLinks } =
+      await import("@/lib/collection-products");
+    const links = await fetchCollectionProductLinks(supabase, collection.id);
 
-    if (links?.length) {
+    if (links.length) {
       const productIds = links.map((l) => l.product_id);
       const { data: products } = await supabase
         .from("products")
@@ -437,43 +520,29 @@ export async function getProductsByCollectionSlug(
         .eq("active", true);
 
       if (products?.length) {
-        const { orderByCollectionLinks } = await import(
-          "@/lib/collection-products"
-        );
         return orderByCollectionLinks(products as Product[], links).slice(
           0,
           limit
         );
       }
+
+      return [];
     }
+
+    if (HOMEPAGE_COLLECTION_SLUGS.has(collectionSlug)) {
+      return getAutoCollectionProducts(supabase, collectionSlug, limit);
+    }
+
+    return [];
   }
 
-  let query = supabase
-    .from("products")
-    .select("*, categories(*)")
-    .eq("active", true)
-    .limit(limit);
-
-  if (collectionSlug === "best-sellers") {
-    query = query.order("review_count", { ascending: false });
-  } else if (collectionSlug === "new-arrivals") {
-    query = query.order("created_at", { ascending: false });
-  } else if (collectionSlug === "deal-of-the-day") {
-    query = query
-      .not("compare_at_price", "is", null)
-      .order("price", { ascending: true });
-  } else {
-    return mockProductsForCollection(collectionSlug, limit);
+  if (HOMEPAGE_COLLECTION_SLUGS.has(collectionSlug)) {
+    return getAutoCollectionProducts(supabase, collectionSlug, limit);
   }
 
-  const { data, error } = await query;
-  if (error || !data?.length) {
-    return useMockFallback()
-      ? mockProductsForCollection(collectionSlug, limit)
-      : [];
-  }
-
-  return data as Product[];
+  return useMockFallback()
+    ? mockProductsForCollection(collectionSlug, limit)
+    : [];
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
