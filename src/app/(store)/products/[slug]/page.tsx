@@ -14,6 +14,7 @@ import { ProductRating } from "@/components/store/ProductRating";
 import { ProductActions } from "@/components/store/ProductActions";
 import { ProductShippingInfo } from "@/components/store/ProductShippingInfo";
 import { ProductReviewsSection } from "@/components/store/ProductReviewsSection";
+import { ProductDescription } from "@/components/store/ProductDescription";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -101,15 +102,7 @@ export default async function ProductPage({ params }: Props) {
           <h2 className="text-base font-bold text-slate-900 mb-3">
             Product Description
           </h2>
-          {product.description ? (
-            <p className="text-sm text-slate-600 leading-relaxed">
-              {product.description}
-            </p>
-          ) : (
-            <p className="text-sm text-slate-400 italic">
-              No description available for this product.
-            </p>
-          )}
+          <ProductDescription description={product.description} />
         </section>
 
         <ProductShippingInfo />
