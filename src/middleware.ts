@@ -2,7 +2,29 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
+function redirectInvalidHost(request: NextRequest): NextResponse | null {
+  if (process.env.NODE_ENV !== "production") return null;
+
+  const host = request.headers.get("host") ?? "";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+
+  const isInvalidHost = host.startsWith("0.0.0.0") || host.startsWith("127.0.0.1");
+
+  if (!isInvalidHost || !appUrl) return null;
+
+  try {
+    const target = new URL(appUrl);
+    const redirectUrl = new URL(request.nextUrl.pathname + request.nextUrl.search, target);
+    return NextResponse.redirect(redirectUrl);
+  } catch {
+    return null;
+  }
+}
+
 export async function middleware(request: NextRequest) {
+  const hostRedirect = redirectInvalidHost(request);
+  if (hostRedirect) return hostRedirect;
+
   if (!isSupabaseConfigured()) {
     return NextResponse.next();
   }
