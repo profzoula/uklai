@@ -163,15 +163,17 @@ export default function CartPage() {
           {items.map((item) => (
             <div
               key={item.product.id}
-              className="flex gap-4 p-4 bg-white rounded-2xl border border-slate-200"
+              className="flex flex-col sm:flex-row gap-4 p-4 bg-white rounded-2xl border border-slate-200"
             >
-              <div className="w-24 h-24 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
+              <div className="w-24 h-24 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 flex-shrink-0">
                 {item.product.image_url && (
-                  <img
-                    src={item.product.image_url}
-                    alt={item.product.name}
-                    className="w-full h-full object-cover"
-                  />
+                  <div className="flex h-full w-full items-center justify-center p-2">
+                    <img
+                      src={item.product.image_url}
+                      alt={item.product.name}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  </div>
                 )}
               </div>
 
@@ -189,37 +191,43 @@ export default function CartPage() {
                 <div className="flex items-center gap-3 mt-3">
                   <div className="flex items-center border border-slate-200 rounded-lg">
                     <button
+                      type="button"
                       onClick={() =>
                         updateQuantity(item.product.id, item.quantity - 1)
                       }
-                      className="p-1.5 hover:bg-slate-50"
+                      className="min-w-[44px] min-h-[44px] p-2 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+                      aria-label={`Decrease quantity of ${item.product.name}`}
                     >
-                      <Minus className="w-3 h-3" />
+                      <Minus className="w-3 h-3" aria-hidden="true" />
                     </button>
                     <span className="px-3 text-sm font-medium">
                       {item.quantity}
                     </span>
                     <button
+                      type="button"
                       onClick={() =>
                         updateQuantity(item.product.id, item.quantity + 1)
                       }
                       disabled={item.quantity >= item.product.stock}
-                      className="p-1.5 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="min-w-[44px] min-h-[44px] p-2 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+                      aria-label={`Increase quantity of ${item.product.name}`}
                     >
-                      <Plus className="w-3 h-3" />
+                      <Plus className="w-3 h-3" aria-hidden="true" />
                     </button>
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => removeItem(item.product.id)}
-                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"
+                    className="min-w-[44px] min-h-[44px] p-2 text-red-500 hover:bg-red-50 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                    aria-label={`Remove ${item.product.name} from cart`}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </div>
               </div>
 
-              <p className="font-bold text-slate-900">
+              <p className="font-bold text-slate-900 sm:text-right sm:self-center">
                 {formatPrice(item.product.price * item.quantity)}
               </p>
             </div>
@@ -232,17 +240,21 @@ export default function CartPage() {
           </h2>
 
           <div className="mb-4">
-            <label className="text-sm font-medium text-slate-700 flex items-center gap-1 mb-2">
-              <Tag className="w-4 h-4" />
+            <label
+              htmlFor="coupon-code"
+              className="text-sm font-medium text-slate-700 flex items-center gap-1 mb-2"
+            >
+              <Tag className="w-4 h-4" aria-hidden="true" />
               Coupon code
             </label>
             <div className="flex gap-2">
               <input
+                id="coupon-code"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                 disabled={!!appliedCoupon}
                 placeholder="SAVE10"
-                className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm uppercase disabled:bg-slate-50"
+                className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm uppercase disabled:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
               {appliedCoupon ? (
                 <button
@@ -264,10 +276,12 @@ export default function CartPage() {
               )}
             </div>
             {couponError && (
-              <p className="text-xs text-red-600 mt-1">{couponError}</p>
+              <p className="text-xs text-red-600 mt-1" role="alert">
+                {couponError}
+              </p>
             )}
             {appliedCoupon && (
-              <p className="text-xs text-green-600 mt-1">
+              <p className="text-xs text-green-600 mt-1" role="status">
                 Coupon {appliedCoupon} applied
               </p>
             )}

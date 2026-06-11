@@ -502,6 +502,44 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   return data;
 }
 
+export async function getRelatedProducts(
+  product: Product,
+  limit = 8
+): Promise<Product[]> {
+  const categorySlug =
+    product.categories && !Array.isArray(product.categories)
+      ? product.categories.slug
+      : Array.isArray(product.categories) && product.categories[0]
+        ? product.categories[0].slug
+        : undefined;
+
+  let related: Product[] = [];
+
+  if (categorySlug) {
+    related = await getProducts({
+      categorySlug,
+      limit: limit + 1,
+    });
+  }
+
+  if (related.length <= 1) {
+    const bestSellers = await getProductsByCollectionSlug("best-sellers", limit + 1);
+    related = [...related, ...bestSellers];
+  }
+
+  const seen = new Set<string>([product.id]);
+  const unique: Product[] = [];
+
+  for (const item of related) {
+    if (seen.has(item.id)) continue;
+    seen.add(item.id);
+    unique.push(item);
+    if (unique.length >= limit) break;
+  }
+
+  return unique;
+}
+
 export async function getDashboardStats(): Promise<DashboardStats> {
   const supabase = await getDataSupabase();
   if (!supabase) {

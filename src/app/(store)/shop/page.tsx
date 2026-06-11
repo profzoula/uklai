@@ -98,7 +98,10 @@ export default async function ShopPage({ searchParams }: Props) {
         <p className="mt-2 text-slate-600">{pageDescription}</p>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
+      <nav
+        aria-label="Product filters"
+        className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide sm:flex-wrap sm:overflow-visible"
+      >
         <Link
           href={filterHref({
             category: null,
@@ -106,7 +109,12 @@ export default async function ShopPage({ searchParams }: Props) {
             deals: false,
             featured: false,
           })}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+          aria-current={
+            !params.category && !collectionSlug && !isDeals && !isFeatured
+              ? "page"
+              : undefined
+          }
+          className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
             !params.category && !collectionSlug && !isDeals && !isFeatured
               ? "bg-primary text-white"
               : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -121,7 +129,8 @@ export default async function ShopPage({ searchParams }: Props) {
             deals: false,
             featured: false,
           })}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+          aria-current={collectionSlug === "best-sellers" ? "page" : undefined}
+          className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
             collectionSlug === "best-sellers"
               ? "bg-primary text-white"
               : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -136,7 +145,8 @@ export default async function ShopPage({ searchParams }: Props) {
             deals: false,
             featured: false,
           })}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+          aria-current={collectionSlug === "new-arrivals" ? "page" : undefined}
+          className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
             collectionSlug === "new-arrivals"
               ? "bg-primary text-white"
               : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -151,7 +161,10 @@ export default async function ShopPage({ searchParams }: Props) {
             deals: false,
             featured: false,
           })}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+          aria-current={
+            collectionSlug === "deal-of-the-day" ? "page" : undefined
+          }
+          className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
             collectionSlug === "deal-of-the-day"
               ? "bg-primary text-white"
               : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -166,7 +179,8 @@ export default async function ShopPage({ searchParams }: Props) {
             deals: true,
             featured: false,
           })}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+          aria-current={isDeals ? "page" : undefined}
+          className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
             isDeals
               ? "bg-primary text-white"
               : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -183,7 +197,15 @@ export default async function ShopPage({ searchParams }: Props) {
               deals: false,
               featured: false,
             })}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            aria-current={
+              params.category === cat.slug &&
+              !isDeals &&
+              !isFeatured &&
+              !collectionSlug
+                ? "page"
+                : undefined
+            }
+            className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
               params.category === cat.slug &&
               !isDeals &&
               !isFeatured &&
@@ -195,7 +217,7 @@ export default async function ShopPage({ searchParams }: Props) {
             {cat.name}
           </Link>
         ))}
-      </div>
+      </nav>
 
       {products.length === 0 ? (
         <div className="text-center py-20">

@@ -87,8 +87,10 @@ export function Header() {
 
             <Link
               href="/cart"
-              className="relative p-2 rounded hover:bg-white/10 transition-colors"
-              aria-label="Cart"
+              className="relative p-2 rounded hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fff200] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0046be]"
+              aria-label={
+                itemCount > 0 ? `Cart, ${itemCount} items` : "Cart, empty"
+              }
             >
               <ShoppingCart className="w-6 h-6" strokeWidth={1.5} />
               {itemCount > 0 && (

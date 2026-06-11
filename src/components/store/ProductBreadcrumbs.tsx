@@ -14,7 +14,10 @@ export function ProductBreadcrumbs({
   categorySlug,
 }: Props) {
   return (
-    <nav className="flex flex-wrap items-center gap-1 text-sm mb-6 lg:mb-8">
+    <nav
+      aria-label="Breadcrumb"
+      className="flex flex-wrap items-center gap-1 text-sm mb-6 lg:mb-8"
+    >
       <Link
         href="/"
         className="text-primary hover:text-primary-dark transition-colors"

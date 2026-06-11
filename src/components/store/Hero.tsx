@@ -14,7 +14,7 @@ export function Hero() {
     <section className="relative border-b border-slate-900/20">
       <div className="relative min-h-[420px] sm:min-h-[520px] lg:min-h-[620px] overflow-hidden">
         <video
-          className="absolute inset-0 h-full w-full object-cover"
+          className="hero-video absolute inset-0 h-full w-full object-cover"
           autoPlay
           muted
           loop

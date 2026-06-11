@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getProductBySlug } from "@/lib/data";
+import { getProductBySlug, getRelatedProducts } from "@/lib/data";
 import { getApprovedReviewsForProduct } from "@/lib/account-data";
 import {
   getProductGallery,
@@ -15,6 +15,7 @@ import { ProductActions } from "@/components/store/ProductActions";
 import { ProductShippingInfo } from "@/components/store/ProductShippingInfo";
 import { ProductReviewsSection } from "@/components/store/ProductReviewsSection";
 import { ProductDescription } from "@/components/store/ProductDescription";
+import { RelatedProductsSection } from "@/components/store/RelatedProductsSection";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -26,7 +27,10 @@ export default async function ProductPage({ params }: Props) {
 
   if (!product) notFound();
 
-  const reviews = await getApprovedReviewsForProduct(product.id);
+  const [reviews, relatedProducts] = await Promise.all([
+    getApprovedReviewsForProduct(product.id),
+    getRelatedProducts(product, 8),
+  ]);
 
   const category = getProductCategory(product);
   const gallery = getProductGallery(product);
@@ -73,7 +77,9 @@ export default async function ProductPage({ params }: Props) {
             {product.compare_at_price && (
               <p className="text-sm text-slate-500 mt-0.5 flex items-center gap-1">
                 Comp. Value: {formatPrice(product.compare_at_price)}
-                <Info className="w-3.5 h-3.5" aria-hidden="true" />
+                <span title="Comparable value at other retailers">
+                  <Info className="w-3.5 h-3.5" aria-label="Comparable value at other retailers" />
+                </span>
               </p>
             )}
           </div>
@@ -109,6 +115,12 @@ export default async function ProductPage({ params }: Props) {
       </div>
 
       <ProductReviewsSection product={product} reviews={reviews} />
+
+      <RelatedProductsSection
+        products={relatedProducts}
+        categoryName={category?.name}
+        categorySlug={category?.slug}
+      />
     </div>
   );
 }

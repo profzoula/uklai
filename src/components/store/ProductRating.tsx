@@ -7,10 +7,11 @@ type Props = {
 
 export function ProductRating({ product }: Props) {
   const filledStars = Math.round(product.rating);
+  const label = `${product.rating.toFixed(1)} out of 5 stars, ${product.review_count} reviews`;
 
   return (
-    <div className="flex items-center gap-1.5">
-      <div className="flex items-center">
+    <div className="flex items-center gap-1.5" aria-label={label} title={label}>
+      <div className="flex items-center" aria-hidden="true">
         {Array.from({ length: 5 }).map((_, i) => (
           <Star
             key={i}
@@ -23,10 +24,10 @@ export function ProductRating({ product }: Props) {
           />
         ))}
       </div>
-      <span className="text-sm font-medium text-slate-700">
+      <span className="text-sm font-medium text-slate-700" aria-hidden="true">
         {product.rating.toFixed(1)}
       </span>
-      <span className="text-sm text-slate-500">
+      <span className="text-sm text-slate-500" aria-hidden="true">
         ({product.review_count})
       </span>
     </div>

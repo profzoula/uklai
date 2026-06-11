@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRef } from "react";
-import { ChevronLeft, ChevronRight, ChevronRight as ChevronSm, Heart } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronRight as ChevronSm } from "lucide-react";
 import type { Product } from "@/types/database";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
@@ -35,14 +35,6 @@ function BestSellerCard({ product }: { product: Product }) {
             Save {formatPrice(save)}
           </span>
         )}
-        <button
-          type="button"
-          className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors"
-          aria-label="Add to wishlist"
-          onClick={(e) => e.preventDefault()}
-        >
-          <Heart className="w-4 h-4" />
-        </button>
         <div className="aspect-square flex items-center justify-center">
           {product.image_url && (
             // eslint-disable-next-line @next/next/no-img-element

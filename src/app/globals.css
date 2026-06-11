@@ -118,3 +118,14 @@ body {
   font-weight: 600;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .hero-video {
+    display: none;
+  }
+
+  .animate-marquee,
+  .animate-fade-in-up {
+    animation: none;
+  }
+}
+
