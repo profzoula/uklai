@@ -7,8 +7,8 @@ import {
 } from "@/lib/store-legal";
 
 export const metadata = {
-  title: "Terms of Service | Briclix",
-  description: "Terms and conditions for using the Briclix online store.",
+  title: "Terms of Service | UKLAI",
+  description: "Terms and conditions for using the UKLAI online store.",
 };
 
 export default async function TermsPage() {

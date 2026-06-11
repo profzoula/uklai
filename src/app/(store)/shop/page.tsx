@@ -147,6 +147,21 @@ export default async function ShopPage({ searchParams }: Props) {
         <Link
           href={filterHref({
             category: null,
+            collection: "deal-of-the-day",
+            deals: false,
+            featured: false,
+          })}
+          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            collectionSlug === "deal-of-the-day"
+              ? "bg-primary text-white"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+          }`}
+        >
+          Deal of the Day
+        </Link>
+        <Link
+          href={filterHref({
+            category: null,
             collection: null,
             deals: true,
             featured: false,

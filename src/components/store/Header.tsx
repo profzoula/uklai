@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { HeaderAccountLink } from "@/components/store/HeaderAccountLink";
+import { BrandLogo } from "@/components/store/BrandLogo";
 import { cn } from "@/lib/utils";
 
 const menuButtons = [
@@ -41,16 +42,10 @@ export function Header() {
       {/* Top row */}
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3 sm:gap-4 h-14 sm:h-[60px]">
-          <Link
-            href="/"
-            className="flex items-center gap-1 shrink-0 group"
+          <BrandLogo
+            className="rounded overflow-hidden"
             onClick={() => setMobileOpen(false)}
-          >
-            <span className="text-xl sm:text-2xl font-extrabold tracking-tight leading-none">
-              Briclix
-            </span>
-            <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-[#fff200] rounded-sm rotate-12 translate-y-1 group-hover:scale-110 transition-transform" />
-          </Link>
+          />
 
           <form
             onSubmit={handleSearch}
@@ -61,7 +56,7 @@ export function Header() {
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search Briclix"
+                placeholder="Search UKLAI"
                 className="w-full h-10 pl-4 pr-11 rounded-md bg-white text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#fff200]"
               />
               <button
@@ -82,7 +77,7 @@ export function Header() {
               <Store className="w-6 h-6 shrink-0" strokeWidth={1.5} />
               <div className="text-left leading-tight">
                 <p className="text-[11px] text-white/80">Your store</p>
-                <p className="text-sm font-semibold">Briclix Online</p>
+                <p className="text-sm font-semibold">UKLAI Online</p>
               </div>
             </Link>
 
@@ -124,7 +119,7 @@ export function Header() {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search Briclix"
+              placeholder="Search UKLAI"
               className="w-full h-10 pl-4 pr-11 rounded-md bg-white text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#fff200]"
             />
             <button

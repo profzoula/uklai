@@ -1,4 +1,4 @@
--- Briclix E-commerce Database Schema
+-- UKLAI E-commerce Database Schema
 -- Run this in your Supabase SQL Editor
 
 -- Enable UUID extension
@@ -267,7 +267,8 @@ ON CONFLICT (code) DO NOTHING;
 INSERT INTO collections (name, slug, description) VALUES
   ('Summer Sale', 'summer-sale', 'Hot deals for the summer season'),
   ('New Arrivals', 'new-arrivals', 'Latest products just landed'),
-  ('Best Sellers', 'best-sellers', 'Our most popular items')
+  ('Best Sellers', 'best-sellers', 'Our most popular items'),
+  ('Deal of the Day', 'deal-of-the-day', 'Limited-time daily deals with the biggest savings')
 ON CONFLICT (slug) DO NOTHING;
 
 INSERT INTO attributes (name, slug, type, values) VALUES

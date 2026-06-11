@@ -1,8 +1,10 @@
 import { Hero } from "@/components/store/Hero";
 import { CategoryGrid } from "@/components/store/CategoryGrid";
+import { DealOfTheDay } from "@/components/store/DealOfTheDay";
+import { BestSellersSection } from "@/components/store/BestSellersSection";
+import { NewArrivalsSection } from "@/components/store/NewArrivalsSection";
+import { PromoBanner } from "@/components/store/PromoBanner";
 import { FeaturedProducts } from "@/components/store/FeaturedProducts";
-import { WhyShopWithUs } from "@/components/store/WhyShopWithUs";
-import { ImpactStats } from "@/components/store/ImpactStats";
 import { Newsletter } from "@/components/store/Newsletter";
 import {
   getCategories,
@@ -10,45 +12,50 @@ import {
   getProductsByCollectionSlug,
   getCollectionBySlug,
 } from "@/lib/data";
+import { getStoreSettings } from "@/lib/store-settings";
 
 export default async function HomePage() {
-  const [categories, featured, bestSellers, newArrivals, bestMeta, newMeta] =
+  const [categories, featured, bestSellers, newArrivals, dealOfDay, bestMeta, newMeta, dealMeta, settings] =
     await Promise.all([
       getCategories(),
       getProducts({ featured: true, limit: 10 }),
-      getProductsByCollectionSlug("best-sellers", 10),
-      getProductsByCollectionSlug("new-arrivals", 10),
+      getProductsByCollectionSlug("best-sellers", 12),
+      getProductsByCollectionSlug("new-arrivals", 12),
+      getProductsByCollectionSlug("deal-of-the-day", 12),
       getCollectionBySlug("best-sellers"),
       getCollectionBySlug("new-arrivals"),
+      getCollectionBySlug("deal-of-the-day"),
+      getStoreSettings(),
     ]);
+
+  const promo = settings.homepage?.promo;
 
   return (
     <>
       <Hero />
       <CategoryGrid categories={categories} />
-      <FeaturedProducts
+      <DealOfTheDay
+        products={dealOfDay}
+        title={dealMeta?.name ?? "Deal of the Day"}
+      />
+      <BestSellersSection
         products={bestSellers}
         title={bestMeta?.name ?? "Best Sellers"}
-        subtitle={
-          bestMeta?.description ?? "Our most popular items loved by customers."
-        }
-        viewAllHref="/shop?collection=best-sellers"
-        viewAllLabel="Shop best sellers"
-        variant="light"
-      />
-      <FeaturedProducts
-        products={newArrivals}
-        title={newMeta?.name ?? "New Arrivals"}
-        subtitle={
-          newMeta?.description ?? "Fresh picks — the latest products just landed."
-        }
-        viewAllHref="/shop?collection=new-arrivals"
-        viewAllLabel="Shop new arrivals"
-        variant="muted"
+        headline={bestMeta?.description}
       />
       <FeaturedProducts products={featured} />
-      <WhyShopWithUs />
-      <ImpactStats />
+      <NewArrivalsSection
+        products={newArrivals}
+        title={newMeta?.name ?? "New Arrivals"}
+        description={newMeta?.description}
+      />
+      <PromoBanner
+        headline={promo?.headline}
+        highlight={promo?.highlight}
+        subtext={promo?.subtext}
+        href={promo?.href}
+        buttonLabel={promo?.buttonLabel}
+      />
       <Newsletter />
     </>
   );

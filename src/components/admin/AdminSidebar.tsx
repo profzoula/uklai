@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BrandLogo } from "@/components/store/BrandLogo";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -134,23 +135,17 @@ export function AdminSidebar() {
         )}
       >
         <div className="px-5 py-6">
-          <Link
-            href="/admin"
-            className="flex items-center gap-2.5"
-            onClick={close}
-          >
-            <div className="w-9 h-9 bg-[#0046be] rounded-xl flex items-center justify-center">
-              <Store className="w-5 h-5 text-white" strokeWidth={1.75} />
-            </div>
-            <div>
-              <span className="font-bold text-slate-900 text-lg tracking-tight block leading-none">
-                Briclix
-              </span>
-              <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
-                Admin
-              </span>
-            </div>
-          </Link>
+          <div className="flex items-center gap-2.5">
+            <BrandLogo
+              href="/admin"
+              height={36}
+              className="rounded overflow-hidden"
+              onClick={close}
+            />
+            <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+              Admin
+            </span>
+          </div>
         </div>
 
         <div className="px-4 mb-2 space-y-2">

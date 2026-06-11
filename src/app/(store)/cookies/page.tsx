@@ -3,8 +3,8 @@ import { LegalPage } from "@/components/store/LegalPage";
 import { defaultLegalStore } from "@/lib/store-legal";
 
 export const metadata = {
-  title: "Cookie Policy | Briclix",
-  description: "How Briclix uses cookies and similar tracking technologies.",
+  title: "Cookie Policy | UKLAI",
+  description: "How UKLAI uses cookies and similar tracking technologies.",
 };
 
 export default async function CookiesPage() {

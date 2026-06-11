@@ -80,6 +80,6 @@ export const useCartStore = create<CartStore>()(
       getItemCount: () =>
         get().items.reduce((count, item) => count + item.quantity, 0),
     }),
-    { name: "briclix-cart" }
+    { name: "uklai-cart" }
   )
 );

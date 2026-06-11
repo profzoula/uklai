@@ -3,8 +3,8 @@ import { LegalPage } from "@/components/store/LegalPage";
 import { defaultLegalStore } from "@/lib/store-legal";
 
 export const metadata = {
-  title: "Accessibility Statement | Briclix",
-  description: "Briclix commitment to digital accessibility under the ADA.",
+  title: "Accessibility Statement | UKLAI",
+  description: "UKLAI commitment to digital accessibility under the ADA.",
 };
 
 export default async function AccessibilityPage() {

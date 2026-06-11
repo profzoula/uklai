@@ -1,4 +1,4 @@
-# Briclix — E-commerce Platform
+# UKLAI — E-commerce Platform
 
 A modern e-commerce website built with Next.js, styled after [PrebuiltUI Design](https://design.prebuiltui.com/), with Supabase database, Stripe payments, and a structured admin dashboard.
 
@@ -48,6 +48,18 @@ To make a user admin:
 ```sql
 UPDATE profiles SET is_admin = true WHERE email = 'your@email.com';
 ```
+
+### Google sign-in (for students)
+
+1. In **Supabase** → **Authentication** → **Providers** → enable **Google**
+2. In [Google Cloud Console](https://console.cloud.google.com/), create an **OAuth 2.0 Client** (Web application)
+3. Add **Authorized redirect URI**: `https://<your-project>.supabase.co/auth/v1/callback`
+4. Copy Client ID and Client Secret into Supabase Google provider settings
+5. In Supabase → **Authentication** → **URL Configuration**, add:
+   - Site URL: `http://localhost:3000` (or your production domain)
+   - Redirect URLs: `http://localhost:3000/auth/callback` and your production callback URL
+
+Students can then use **Continue with Google** on `/auth/login` and `/auth/signup`.
 
 ### 4. Configure Stripe (optional)
 

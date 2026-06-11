@@ -1,8 +1,18 @@
 import type { Category, Product, Order, DashboardStats } from "@/types/database";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
+import {
+  isSupabaseConfigured,
+  isSupabaseServerLive,
+  useMockDataFallback,
+} from "@/lib/supabase/config";
+import { getDataSupabase } from "@/lib/supabase/server-data";
 import "server-only";
 
-export { isSupabaseConfigured };
+export { isSupabaseConfigured, isSupabaseServerLive };
+
+function useMockFallback(): boolean {
+  if (!isSupabaseServerLive()) return true;
+  return useMockDataFallback();
+}
 
 export const mockCategories: Category[] = [
   {
@@ -107,7 +117,7 @@ export const mockProducts: Product[] = [
     price: 49,
     compare_at_price: 69,
     image_url:
-      "https://images.unsplash.com/photo-1612287230202-1ff1d85b1dff?w=600",
+      "https://images.unsplash.com/photo-1606148032779-3425ef6b2295?w=600&q=80",
     category_id: "1",
     stock: 100,
     badge: null,
@@ -216,16 +226,17 @@ export const mockProducts: Product[] = [
 ];
 
 export async function getCategories(): Promise<Category[]> {
-  if (!isSupabaseConfigured()) return mockCategories;
+  const supabase = await getDataSupabase();
+  if (!supabase) return mockCategories;
 
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
   const { data, error } = await supabase
     .from("categories")
     .select("*")
     .order("sort_order");
 
-  if (error || !data?.length) return mockCategories;
+  if (error || !data?.length) {
+    return useMockFallback() ? mockCategories : [];
+  }
   return data;
 }
 
@@ -265,12 +276,11 @@ export async function getProducts(options?: {
     return result;
   }
 
-  if (!isSupabaseConfigured()) {
+  const supabase = await getDataSupabase();
+  if (!supabase) {
     return applyFilters(mockProducts);
   }
 
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
   let query = supabase
     .from("products")
     .select("*, categories(*)")
@@ -295,7 +305,7 @@ export async function getProducts(options?: {
 
   const { data, error } = await query;
   if (error || !data?.length) {
-    return applyFilters(mockProducts);
+    return useMockFallback() ? applyFilters(mockProducts) : [];
   }
 
   let products = data as Product[];
@@ -332,6 +342,20 @@ function mockProductsForCollection(slug: string, limit: number): Product[] {
       .slice(0, limit);
   }
 
+  if (slug === "deal-of-the-day") {
+    return [...active]
+      .filter(
+        (p) => p.compare_at_price != null && p.compare_at_price > p.price
+      )
+      .sort(
+        (a, b) =>
+          b.compare_at_price! -
+          b.price -
+          (a.compare_at_price! - a.price)
+      )
+      .slice(0, limit);
+  }
+
   return active.slice(0, limit);
 }
 
@@ -351,14 +375,19 @@ export async function getCollectionBySlug(
       slug: "new-arrivals",
       description: "Latest products just landed",
     },
+    "deal-of-the-day": {
+      id: "deal-of-the-day",
+      name: "Deal of the Day",
+      slug: "deal-of-the-day",
+      description: "Limited-time daily deals — biggest savings while they last.",
+    },
   };
 
-  if (!isSupabaseConfigured()) {
+  const supabase = await getDataSupabase();
+  if (!supabase) {
     return fallbacks[slug] ?? null;
   }
 
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
   const { data } = await supabase
     .from("collections")
     .select("id, name, slug, description")
@@ -374,12 +403,10 @@ export async function getProductsByCollectionSlug(
   collectionSlug: string,
   limit = 10
 ): Promise<Product[]> {
-  if (!isSupabaseConfigured()) {
+  const supabase = await getDataSupabase();
+  if (!supabase) {
     return mockProductsForCollection(collectionSlug, limit);
   }
-
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
 
   const { data: collection } = await supabase
     .from("collections")
@@ -417,28 +444,33 @@ export async function getProductsByCollectionSlug(
     query = query.order("review_count", { ascending: false });
   } else if (collectionSlug === "new-arrivals") {
     query = query.order("created_at", { ascending: false });
+  } else if (collectionSlug === "deal-of-the-day") {
+    query = query
+      .not("compare_at_price", "is", null)
+      .order("price", { ascending: true });
   } else {
     return mockProductsForCollection(collectionSlug, limit);
   }
 
   const { data, error } = await query;
   if (error || !data?.length) {
-    return mockProductsForCollection(collectionSlug, limit);
+    return useMockFallback()
+      ? mockProductsForCollection(collectionSlug, limit)
+      : [];
   }
 
   return data as Product[];
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  if (!isSupabaseConfigured()) {
+  const supabase = await getDataSupabase();
+  if (!supabase) {
     const product = mockProducts.find((p) => p.slug === slug);
     if (!product) return null;
     const category = mockCategories.find((c) => c.id === product.category_id);
     return category ? { ...product, categories: category } : product;
   }
 
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
   const { data, error } = await supabase
     .from("products")
     .select("*, categories(*)")
@@ -447,6 +479,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     .single();
 
   if (error || !data) {
+    if (!useMockFallback()) return null;
     const product = mockProducts.find((p) => p.slug === slug);
     if (!product) return null;
     const category = mockCategories.find((c) => c.id === product.category_id);
@@ -456,7 +489,8 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
-  if (!isSupabaseConfigured()) {
+  const supabase = await getDataSupabase();
+  if (!supabase) {
     return {
       totalRevenue: 45280,
       totalOrders: 156,
@@ -466,9 +500,6 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       topProducts: mockProducts.slice(0, 5),
     };
   }
-
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
 
   const [ordersRes, productsRes, customersRes, recentRes] = await Promise.all([
     supabase.from("orders").select("total, status, created_at"),
@@ -497,10 +528,9 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 }
 
 export async function getAllOrders(): Promise<Order[]> {
-  if (!isSupabaseConfigured()) return [];
+  const supabase = await getDataSupabase();
+  if (!supabase) return [];
 
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
   const { data } = await supabase
     .from("orders")
     .select("*, order_items(*)")
@@ -510,10 +540,9 @@ export async function getAllOrders(): Promise<Order[]> {
 }
 
 export async function getOrderById(id: string): Promise<Order | null> {
-  if (!isSupabaseConfigured()) return null;
+  const supabase = await getDataSupabase();
+  if (!supabase) return null;
 
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
   const { data } = await supabase
     .from("orders")
     .select("*, order_items(*)")
@@ -526,10 +555,9 @@ export async function getOrderById(id: string): Promise<Order | null> {
 export async function getOrderByStripeSession(
   sessionId: string
 ): Promise<Order | null> {
-  if (!isSupabaseConfigured()) return null;
+  const supabase = await getDataSupabase();
+  if (!supabase) return null;
 
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
   const { data } = await supabase
     .from("orders")
     .select("*, order_items(*)")
@@ -540,10 +568,9 @@ export async function getOrderByStripeSession(
 }
 
 export async function getAllProductsAdmin(): Promise<Product[]> {
-  if (!isSupabaseConfigured()) return mockProducts;
+  const supabase = await getDataSupabase();
+  if (!supabase) return mockProducts;
 
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
   const { data } = await supabase
     .from("products")
     .select("*, categories(*)")
@@ -553,12 +580,11 @@ export async function getAllProductsAdmin(): Promise<Product[]> {
 }
 
 export async function getProductByIdAdmin(id: string): Promise<Product | null> {
-  if (!isSupabaseConfigured()) {
+  const supabase = await getDataSupabase();
+  if (!supabase) {
     return mockProducts.find((p) => p.id === id) ?? null;
   }
 
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
   const { data } = await supabase
     .from("products")
     .select("*, categories(*)")
@@ -566,23 +592,24 @@ export async function getProductByIdAdmin(id: string): Promise<Product | null> {
     .single();
 
   if (!data) {
-    return mockProducts.find((p) => p.id === id) ?? null;
+    return useMockFallback()
+      ? (mockProducts.find((p) => p.id === id) ?? null)
+      : null;
   }
 
   return data as Product;
 }
 
 export async function getAllCategoriesAdmin(): Promise<Category[]> {
-  if (!isSupabaseConfigured()) return mockCategories;
+  const supabase = await getDataSupabase();
+  if (!supabase) return mockCategories;
 
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
   const { data } = await supabase
     .from("categories")
     .select("*")
     .order("sort_order");
 
-  return (data ?? mockCategories) as Category[];
+  return (data ?? (useMockFallback() ? mockCategories : [])) as Category[];
 }
 
 export async function getCategoryByIdAdmin(

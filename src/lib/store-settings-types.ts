@@ -38,20 +38,33 @@ export type NotificationSettings = {
   admin_email: string;
 };
 
+export type HomepagePromoSettings = {
+  headline: string;
+  highlight: string;
+  subtext: string;
+  href: string;
+  buttonLabel: string;
+};
+
+export type HomepageSettings = {
+  promo?: HomepagePromoSettings;
+};
+
 export type AllStoreSettings = {
   store: StoreInfoSettings;
   payment: PaymentSettings;
   shipping: ShippingSettings;
   tax: TaxSettings;
   notifications: NotificationSettings;
+  homepage?: HomepageSettings;
 };
 
 export const defaultStoreSettings: AllStoreSettings = {
   store: {
-    name: "Briclix",
-    description: "Briclix Store — premium products at unbeatable prices.",
+    name: "UKLAI",
+    description: "UKLAI Store — premium products at unbeatable prices.",
     phone: "",
-    email: "support@briclix.com",
+    email: "support@uklai.com",
     country: "United States",
     address: "",
     city: "",
@@ -80,7 +93,17 @@ export const defaultStoreSettings: AllStoreSettings = {
     admin_new_order: true,
     shipping_updates: true,
     sms_updates: false,
-    admin_email: "support@briclix.com",
+    admin_email: "support@uklai.com",
+  },
+  homepage: {
+    promo: {
+      headline: "Shop today and get",
+      highlight: "10% off",
+      subtext:
+        "your first order when you join UKLAI Member Picks — exclusive deals, early access & free shipping alerts.",
+      href: "/shop?deals=true",
+      buttonLabel: "Learn more",
+    },
   },
 };
 
@@ -96,6 +119,18 @@ export function mergeStoreSettings(
       ...defaultStoreSettings.notifications,
       ...partial.notifications,
     },
+    homepage: partial.homepage
+      ? {
+          ...defaultStoreSettings.homepage,
+          ...partial.homepage,
+          promo: partial.homepage.promo
+            ? {
+                ...defaultStoreSettings.homepage?.promo,
+                ...partial.homepage.promo,
+              }
+            : defaultStoreSettings.homepage?.promo,
+        }
+      : defaultStoreSettings.homepage,
   };
 }
 

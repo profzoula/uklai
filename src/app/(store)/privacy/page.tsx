@@ -3,8 +3,8 @@ import { LegalPage } from "@/components/store/LegalPage";
 import { defaultLegalStore, formatLegalAddress } from "@/lib/store-legal";
 
 export const metadata = {
-  title: "Privacy Policy | Briclix",
-  description: "How Briclix collects, uses, and protects your personal information.",
+  title: "Privacy Policy | UKLAI",
+  description: "How UKLAI collects, uses, and protects your personal information.",
 };
 
 export default async function PrivacyPage() {

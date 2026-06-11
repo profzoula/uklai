@@ -4,8 +4,8 @@ import { defaultLegalStore } from "@/lib/store-legal";
 import { ReturnRequestForm } from "@/components/store/ReturnRequestForm";
 
 export const metadata = {
-  title: "Returns & Refunds | Briclix",
-  description: "Return and refund policy for Briclix purchases.",
+  title: "Returns & Refunds | UKLAI",
+  description: "Return and refund policy for UKLAI purchases.",
 };
 
 export default async function ReturnsPage() {

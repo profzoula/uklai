@@ -9,16 +9,18 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  if (isSupabaseConfigured()) {
-    const user = await getUser();
-    if (!user) {
-      redirect("/auth/login?next=/admin");
-    }
+  if (!isSupabaseConfigured()) {
+    redirect("/?error=supabase_required");
+  }
 
-    const profile = await getProfile();
-    if (!profile?.is_admin) {
-      redirect("/?error=admin_required");
-    }
+  const user = await getUser();
+  if (!user) {
+    redirect("/auth/login?next=/admin");
+  }
+
+  const profile = await getProfile();
+  if (!profile?.is_admin) {
+    redirect("/auth/login?next=/admin&error=admin_required");
   }
 
   return (

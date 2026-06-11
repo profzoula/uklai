@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
+import { getDataSupabase } from "@/lib/supabase/server-data";
+import { validateCheckoutItems } from "@/lib/checkout-validate";
 import { validateCouponForCart } from "@/lib/coupons";
 import type { Coupon } from "@/lib/admin-data-types";
 import { getStoreSettings } from "@/lib/store-settings";
 import { calculateCheckoutTotals } from "@/lib/checkout-totals";
+import { isSupabaseServerLive } from "@/lib/supabase/config";
 
 type CheckoutItem = {
   productId: string;
@@ -20,9 +23,9 @@ export async function POST(request: Request) {
       items: CheckoutItem[];
       couponCode?: string;
     };
-    const { items, couponCode } = body;
+    const { items: rawItems, couponCode } = body;
 
-    if (!items?.length) {
+    if (!rawItems?.length) {
       return NextResponse.json({ error: "No items" }, { status: 400 });
     }
 
@@ -33,10 +36,27 @@ export async function POST(request: Request) {
       );
     }
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const dataSupabase = await getDataSupabase();
+    let items: CheckoutItem[] = rawItems;
+
+    if (dataSupabase) {
+      const validated = await validateCheckoutItems(dataSupabase, rawItems);
+      if ("error" in validated) {
+        return NextResponse.json({ error: validated.error }, { status: 400 });
+      }
+      items = validated.items;
+    }
+
+    let user = null;
+    if (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      try {
+        const supabase = await createClient();
+        const { data } = await supabase.auth.getUser();
+        user = data.user;
+      } catch {
+        // Auth optional for guest checkout
+      }
+    }
 
     const settings = await getStoreSettings();
     let discount = 0;
@@ -44,8 +64,8 @@ export async function POST(request: Request) {
     let couponId: string | null = null;
     let freeShipping = false;
 
-    if (couponCode?.trim()) {
-      const { data: couponRow } = await supabase
+    if (couponCode?.trim() && dataSupabase) {
+      const { data: couponRow } = await dataSupabase
         .from("coupons")
         .select("*")
         .ilike("code", couponCode.trim())
@@ -160,11 +180,8 @@ export async function POST(request: Request) {
       },
     });
 
-    if (
-      process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    ) {
-      await supabase.from("orders").insert({
+    if (isSupabaseServerLive() && dataSupabase) {
+      await dataSupabase.from("orders").insert({
         user_id: user?.id ?? null,
         stripe_session_id: session.id,
         status: "pending",

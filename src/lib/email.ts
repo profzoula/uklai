@@ -7,31 +7,56 @@ type SendEmailParams = {
 };
 
 export async function sendEmail({ to, subject, html }: SendEmailParams) {
-  const apiKey = process.env.RESEND_API_KEY;
   const from =
-    process.env.EMAIL_FROM ?? "Briclix <onboarding@resend.dev>";
+    process.env.EMAIL_FROM ?? "UKLAI <onboarding@resend.dev>";
 
-  if (!apiKey) {
-    console.info("[email skipped]", subject, "→", to);
-    return { ok: false, skipped: true as const };
+  const resendKey = process.env.RESEND_API_KEY;
+  if (resendKey) {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ from, to, subject, html }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.error("[email failed]", err);
+      return { ok: false, skipped: false as const, error: err };
+    }
+
+    return { ok: true, skipped: false as const };
   }
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ from, to, subject, html }),
-  });
+  const sendgridKey = process.env.SENDGRID_API_KEY;
+  if (sendgridKey) {
+    const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${sendgridKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        personalizations: [{ to: [{ email: to }] }],
+        from: { email: from.match(/<([^>]+)>/)?.[1] ?? from, name: "UKLAI" },
+        subject,
+        content: [{ type: "text/html", value: html }],
+      }),
+    });
 
-  if (!res.ok) {
-    const err = await res.text();
-    console.error("[email failed]", err);
-    return { ok: false, skipped: false as const, error: err };
+    if (!res.ok) {
+      const err = await res.text();
+      console.error("[email failed]", err);
+      return { ok: false, skipped: false as const, error: err };
+    }
+
+    return { ok: true, skipped: false as const };
   }
 
-  return { ok: true, skipped: false as const };
+  console.info("[email skipped]", subject, "→", to);
+  return { ok: false, skipped: true as const };
 }
 
 export async function sendOrderConfirmationEmail(order: {
@@ -43,7 +68,7 @@ export async function sendOrderConfirmationEmail(order: {
   const settings = await getStoreSettings();
   if (!settings.notifications.order_confirmation) return;
 
-  const storeName = settings.store.name || "Briclix";
+  const storeName = settings.store.name || "UKLAI";
   const items = order.order_items ?? [];
   const itemsHtml = items
     .map(
@@ -74,7 +99,7 @@ export async function sendShippedEmail(order: {
   const settings = await getStoreSettings();
   if (!settings.notifications.shipping_updates) return;
 
-  const storeName = settings.store.name || "Briclix";
+  const storeName = settings.store.name || "UKLAI";
   const tracking = order.tracking_number
     ? `<p>Tracking (${order.tracking_carrier ?? "Carrier"}): <strong>${order.tracking_number}</strong></p>`
     : "";

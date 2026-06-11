@@ -4,8 +4,8 @@ import { LegalPage, legalPages } from "@/components/store/LegalPage";
 import { defaultLegalStore } from "@/lib/store-legal";
 
 export const metadata = {
-  title: "Legal Policies | Briclix",
-  description: "Terms, privacy, shipping, returns, and other legal policies for Briclix.",
+  title: "Legal Policies | UKLAI",
+  description: "Terms, privacy, shipping, returns, and other legal policies for UKLAI.",
 };
 
 export default async function LegalIndexPage() {

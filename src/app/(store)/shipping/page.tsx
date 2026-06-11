@@ -3,8 +3,8 @@ import { LegalPage } from "@/components/store/LegalPage";
 import { defaultLegalStore, formatLegalAddress } from "@/lib/store-legal";
 
 export const metadata = {
-  title: "Shipping Policy | Briclix",
-  description: "Shipping rates, delivery times, and policies for Briclix orders.",
+  title: "Shipping Policy | UKLAI",
+  description: "Shipping rates, delivery times, and policies for UKLAI orders.",
 };
 
 export default async function ShippingPage() {

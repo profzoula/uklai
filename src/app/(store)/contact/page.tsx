@@ -1,6 +1,10 @@
+import { getStoreSettings } from "@/lib/store-settings";
 import { StoreInfoPage } from "@/components/store/StoreInfoPage";
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const { store } = await getStoreSettings();
+  const email = store.email || "support@uklai.com";
+
   return (
     <StoreInfoPage title="Contact Us">
       <p>
@@ -10,13 +14,23 @@ export default function ContactPage() {
       <ul className="list-none space-y-2 not-prose">
         <li>
           <strong className="text-slate-900">Email:</strong>{" "}
-          <a
-            href="mailto:support@briclix.com"
-            className="text-primary hover:underline"
-          >
-            support@briclix.com
+          <a href={`mailto:${email}`} className="text-primary hover:underline">
+            {email}
           </a>
         </li>
+        {store.phone && (
+          <li>
+            <strong className="text-slate-900">Phone:</strong> {store.phone}
+          </li>
+        )}
+        {(store.address || store.city) && (
+          <li>
+            <strong className="text-slate-900">Address:</strong>{" "}
+            {[store.address, store.city, store.province, store.postal_code]
+              .filter(Boolean)
+              .join(", ")}
+          </li>
+        )}
         <li>
           <strong className="text-slate-900">Hours:</strong> Mon–Fri, 9am–6pm ET
         </li>

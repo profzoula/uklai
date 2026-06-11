@@ -64,7 +64,7 @@ export function AdminHeader() {
               <p className="text-sm font-semibold text-slate-900 leading-tight">
                 Admin
               </p>
-              <p className="text-xs text-slate-500">Briclix</p>
+              <p className="text-xs text-slate-500">UKLAI</p>
             </div>
           </div>
         </div>

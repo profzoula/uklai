@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "setup:db": "node scripts/setup-database.mjs",
+    "import:aliexpress": "node scripts/import-aliexpress-csv.mjs",
+    "sync:profiles": "node scripts/sync-profiles.mjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.7.0",
@@ -28,6 +31,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
+    "pg": "^8.21.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

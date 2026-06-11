@@ -8,8 +8,8 @@ export type LegalStoreInfo = Pick<
 >;
 
 export const defaultLegalStore: LegalStoreInfo = {
-  name: "Briclix",
-  email: "support@briclix.com",
+  name: "UKLAI",
+  email: "support@uklai.com",
   phone: "",
   address: "",
   city: "",

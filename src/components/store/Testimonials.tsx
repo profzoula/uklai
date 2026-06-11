@@ -2,7 +2,7 @@ const testimonials = [
   {
     name: "Briar Martin",
     handle: "@neilstellar",
-    text: "Great selection and fast delivery. Briclix is now my go-to for online shopping.",
+    text: "Great selection and fast delivery. UKLAI is now my go-to for online shopping.",
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100",
   },
   {

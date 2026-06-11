@@ -43,7 +43,7 @@ export default async function AdminDashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
           <p className="text-slate-500 mt-1">
-            Live overview of your Briclix store performance
+            Live overview of your UKLAI store performance
           </p>
         </div>
         <p className="text-xs text-slate-400" aria-live="polite">

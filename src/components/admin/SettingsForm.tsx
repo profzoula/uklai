@@ -274,7 +274,7 @@ export function SettingsForm({ initialSettings }: Props) {
                       value={settings.store.email}
                       onChange={(e) => updateStore({ email: e.target.value })}
                       className={inputClass}
-                      placeholder="support@briclix.com"
+                      placeholder="support@uklai.com"
                     />
                   </div>
                 </div>

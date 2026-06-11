@@ -1,6 +1,7 @@
 import "server-only";
 
-import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { isSupabaseConfigured, isSupabaseServerLive } from "@/lib/supabase/config";
+import { getDataSupabase } from "@/lib/supabase/server-data";
 import {
   defaultStoreSettings,
   mergeStoreSettings,
@@ -19,10 +20,9 @@ export type {
 export { defaultStoreSettings } from "@/lib/store-settings-types";
 
 export async function getStoreSettings(): Promise<AllStoreSettings> {
-  if (!isSupabaseConfigured()) return defaultStoreSettings;
+  const supabase = await getDataSupabase();
+  if (!supabase) return defaultStoreSettings;
 
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
   const { data } = await supabase
     .from("store_settings")
     .select("data")

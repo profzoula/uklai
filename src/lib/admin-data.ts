@@ -6,7 +6,8 @@ import {
   getAllOrders,
   getAllCategoriesAdmin,
 } from "@/lib/data";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { isSupabaseConfigured, isSupabaseServerLive, useMockDataFallback } from "@/lib/supabase/config";
+import { getDataSupabase } from "@/lib/supabase/server-data";
 import type { Order, Product } from "@/types/database";
 import type {
   Collection,
@@ -50,6 +51,15 @@ export const mockCollections: Collection[] = [
     slug: "new-arrivals",
     description: "Latest products just landed",
     product_count: 8,
+    active: true,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "4",
+    name: "Deal of the Day",
+    slug: "deal-of-the-day",
+    description: "Limited-time daily deals with the biggest savings",
+    product_count: 6,
     active: true,
     created_at: new Date().toISOString(),
   },
@@ -132,7 +142,7 @@ export const mockPages: CmsPage[] = [
     id: "1",
     title: "About Us",
     slug: "about-us",
-    content: "About Briclix store.",
+    content: "About UKLAI store.",
     status: "published",
     updated_at: new Date().toISOString(),
   },
@@ -466,9 +476,12 @@ export async function getLatestOrders(): Promise<LatestOrderRow[]> {
 }
 
 async function getSupabase() {
-  if (!isSupabaseConfigured()) return null;
-  const { createClient } = await import("@/lib/supabase/server");
-  return createClient();
+  return getDataSupabase();
+}
+
+function useMockFallback(): boolean {
+  if (!isSupabaseServerLive()) return true;
+  return useMockDataFallback();
 }
 
 export async function getCollections(): Promise<Collection[]> {
@@ -480,7 +493,7 @@ export async function getCollections(): Promise<Collection[]> {
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (!data?.length) return mockCollections;
+  if (!data?.length) return useMockFallback() ? mockCollections : [];
 
   const withCounts = await Promise.all(
     data.map(async (row) => {

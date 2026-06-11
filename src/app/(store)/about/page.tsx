@@ -2,9 +2,9 @@ import { StoreInfoPage } from "@/components/store/StoreInfoPage";
 
 export default function AboutPage() {
   return (
-    <StoreInfoPage title="About Briclix">
+    <StoreInfoPage title="About UKLAI">
       <p>
-        Briclix is an online store built around one idea: premium products at
+        UKLAI is an online store built around one idea: premium products at
         prices that make sense. We curate electronics, fashion, home goods, and
         more from trusted suppliers.
       </p>
