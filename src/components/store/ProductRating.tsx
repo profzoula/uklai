@@ -15,7 +15,7 @@ export function ProductRating({ product }: Props) {
         {Array.from({ length: 5 }).map((_, i) => (
           <Star
             key={i}
-            className={`w-[18px] h-[18px] ${
+            className={`w-5 h-5 sm:w-[18px] sm:h-[18px] ${
               i < filledStars
                 ? "fill-amber-400 text-amber-400"
                 : "fill-none text-slate-300 stroke-slate-300"
@@ -24,10 +24,10 @@ export function ProductRating({ product }: Props) {
           />
         ))}
       </div>
-      <span className="text-sm font-medium text-slate-700" aria-hidden="true">
+      <span className="text-base sm:text-sm font-medium text-slate-700" aria-hidden="true">
         {product.rating.toFixed(1)}
       </span>
-      <span className="text-sm text-slate-500" aria-hidden="true">
+      <span className="text-base sm:text-sm text-slate-500" aria-hidden="true">
         ({product.review_count})
       </span>
     </div>

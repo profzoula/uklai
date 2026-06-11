@@ -39,8 +39,8 @@ export function ProductTrustBox({
               <Icon className="w-5 h-5" strokeWidth={1.75} />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900">{title}</p>
-              <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+              <p className="text-base sm:text-sm font-bold text-slate-900">{title}</p>
+              <p className="text-sm text-slate-500 mt-0.5 leading-relaxed">
                 {text}
               </p>
             </div>

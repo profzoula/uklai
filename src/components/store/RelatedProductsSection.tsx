@@ -29,7 +29,7 @@ export function RelatedProductsSection({
             You may also like
           </h2>
           {categoryName && (
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-base sm:text-sm text-slate-500 mt-1">
               More from {categoryName}
             </p>
           )}
@@ -44,7 +44,7 @@ export function RelatedProductsSection({
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+      <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

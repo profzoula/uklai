@@ -16,7 +16,7 @@ export function ProductBreadcrumbs({
   return (
     <nav
       aria-label="Breadcrumb"
-      className="flex flex-wrap items-center gap-1 text-sm mb-6 lg:mb-8"
+      className="flex flex-wrap items-center gap-1.5 text-base sm:text-sm mb-6 lg:mb-8"
     >
       <Link
         href="/"

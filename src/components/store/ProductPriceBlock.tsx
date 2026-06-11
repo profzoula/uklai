@@ -15,20 +15,20 @@ export function ProductPriceBlock({ product }: Props) {
   return (
     <div className="flex flex-wrap items-end gap-3">
       {discount !== null && (
-        <span className="inline-flex items-center bg-red-600 text-white text-sm font-bold px-2.5 py-1 rounded-md">
+        <span className="inline-flex items-center bg-red-600 text-white text-base sm:text-sm font-bold px-3 py-1 rounded-md">
           -{discount}%
         </span>
       )}
-      <p className="text-3xl sm:text-4xl font-bold text-red-600 leading-none">
+      <p className="text-4xl sm:text-4xl font-bold text-red-600 leading-none">
         {formatPrice(product.price)}
       </p>
       {product.compare_at_price && product.compare_at_price > product.price && (
-        <p className="text-lg text-slate-400 line-through pb-0.5">
+        <p className="text-xl sm:text-lg text-slate-400 line-through pb-0.5">
           {formatPrice(product.compare_at_price)}
         </p>
       )}
       {savings !== null && (
-        <p className="w-full text-sm font-medium text-emerald-700">
+        <p className="w-full text-base sm:text-sm font-medium text-emerald-700">
           You save {formatPrice(savings)}
         </p>
       )}

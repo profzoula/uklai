@@ -52,14 +52,14 @@ export default async function ProductPage({ params }: Props) {
       <ProductDescription description={product.description} />
       {highlights.length > 0 && (
         <div>
-          <h3 className="text-sm font-bold text-slate-900 mb-3">
+          <h3 className="text-base font-bold text-slate-900 mb-3">
             Key highlights
           </h3>
           <ul className="space-y-2">
             {highlights.map((item) => (
               <li
                 key={item}
-                className="flex items-start gap-2 text-sm text-slate-600"
+                className="flex items-start gap-2 text-base sm:text-sm text-slate-600"
               >
                 <Check
                   className="w-4 h-4 text-primary shrink-0 mt-0.5"
@@ -102,13 +102,13 @@ export default async function ProductPage({ params }: Props) {
           {category && (
             <Link
               href={`/shop?category=${category.slug}`}
-              className="inline-flex text-xs font-semibold text-primary bg-primary-light px-3 py-1 rounded-full hover:bg-primary/15 transition-colors mb-3"
+              className="inline-flex text-sm font-semibold text-primary bg-primary-light px-3.5 py-1.5 rounded-full hover:bg-primary/15 transition-colors mb-3"
             >
               {category.name}
             </Link>
           )}
 
-          <h1 className="text-2xl sm:text-[1.75rem] lg:text-3xl font-bold text-slate-900 leading-tight tracking-tight">
+          <h1 className="text-[1.65rem] leading-snug sm:text-[1.75rem] lg:text-3xl font-bold text-slate-900 tracking-tight">
             {product.name}
           </h1>
 
@@ -125,7 +125,7 @@ export default async function ProductPage({ params }: Props) {
               {highlights.slice(0, 3).map((item) => (
                 <li
                   key={item}
-                  className="text-sm text-slate-600 pl-1 leading-relaxed"
+                  className="text-base sm:text-sm text-slate-600 pl-1 leading-relaxed"
                 >
                   {item}
                 </li>

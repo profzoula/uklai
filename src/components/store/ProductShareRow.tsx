@@ -22,7 +22,7 @@ export function ProductShareRow({ sku, productName }: Props) {
   }
 
   return (
-    <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500">
+    <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-base sm:text-sm text-slate-500">
       {sku ? (
         <p>
           SKU:{" "}

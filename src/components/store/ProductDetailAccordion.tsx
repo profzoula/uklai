@@ -34,7 +34,7 @@ export function ProductDetailAccordion({ settings }: Props) {
       title: "Payment information",
       icon: CreditCard,
       content: (
-        <ul className="space-y-1.5 text-sm text-slate-600">
+        <ul className="space-y-1.5 text-base sm:text-sm text-slate-600">
           {paymentLines.length > 0 ? (
             paymentLines.map((line) => (
               <li key={line as string} className="flex gap-2">
@@ -45,7 +45,7 @@ export function ProductDetailAccordion({ settings }: Props) {
           ) : (
             <li>Contact us for payment options.</li>
           )}
-          <li className="pt-2 text-xs text-slate-500">
+          <li className="pt-2 text-sm text-slate-500">
             Currency: {payment.currency}. BNPL options appear at checkout when
             eligible.
           </li>
@@ -57,7 +57,7 @@ export function ProductDetailAccordion({ settings }: Props) {
       title: "Shipping information",
       icon: Truck,
       content: (
-        <ul className="space-y-1.5 text-sm text-slate-600">
+        <ul className="space-y-1.5 text-base sm:text-sm text-slate-600">
           <li>
             Standard shipping: {formatMoney(shipping.flat_rate)} flat rate
           </li>
@@ -77,7 +77,7 @@ export function ProductDetailAccordion({ settings }: Props) {
       title: "Warranty policy",
       icon: Shield,
       content: (
-        <ul className="space-y-1.5 text-sm text-slate-600">
+        <ul className="space-y-1.5 text-base sm:text-sm text-slate-600">
           <li>Manufacturer warranty applies where stated on the product.</li>
           <li>UKLAI supports returns on eligible items within 90 days.</li>
           <li>
@@ -104,7 +104,7 @@ export function ProductDetailAccordion({ settings }: Props) {
               className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
               aria-expanded={isOpen}
             >
-              <span className="flex items-center gap-2.5 text-sm font-semibold text-slate-900">
+              <span className="flex items-center gap-2.5 text-base sm:text-sm font-semibold text-slate-900">
                 <Icon className="w-4 h-4 text-slate-500" aria-hidden="true" />
                 {title}
               </span>

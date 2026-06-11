@@ -23,7 +23,7 @@ export function ProductCard({ product }: Props) {
       >
         <div className="aspect-square overflow-hidden bg-gradient-to-b from-slate-50 to-white">
           {product.image_url && (
-            <div className="flex h-full w-full items-center justify-center p-3 sm:p-4">
+            <div className="flex h-full w-full items-center justify-center p-2 sm:p-4">
               <img
                 src={product.image_url}
                 alt={product.name}
@@ -34,7 +34,7 @@ export function ProductCard({ product }: Props) {
           )}
         </div>
         {product.badge && (
-          <span className="absolute top-2 left-2 lg:top-3 lg:left-3 bg-primary text-white text-[11px] lg:text-xs font-semibold px-2 py-0.5 lg:px-3 lg:py-1 rounded-full">
+          <span className="absolute top-2 left-2 lg:top-3 lg:left-3 bg-primary text-white text-xs lg:text-sm font-semibold px-2.5 py-1 lg:px-3 lg:py-1 rounded-full">
             {product.badge}
           </span>
         )}
@@ -45,7 +45,7 @@ export function ProductCard({ product }: Props) {
           href={`/products/${product.slug}`}
           className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
         >
-          <h3 className="text-sm lg:text-base font-semibold text-slate-900 group-hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem]">
+          <h3 className="text-base lg:text-lg font-semibold text-slate-900 group-hover:text-primary transition-colors line-clamp-2 min-h-[2.75rem]">
             {product.name}
           </h3>
         </Link>
@@ -55,22 +55,22 @@ export function ProductCard({ product }: Props) {
           aria-label={ratingLabel}
           title={ratingLabel}
         >
-          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
-          <span className="text-xs sm:text-sm font-medium text-slate-700" aria-hidden="true">
+          <Star className="w-4 h-4 sm:w-4 sm:h-4 fill-amber-400 text-amber-400" aria-hidden="true" />
+          <span className="text-base sm:text-sm font-medium text-slate-700" aria-hidden="true">
             {product.rating}
           </span>
-          <span className="text-xs sm:text-sm text-slate-400" aria-hidden="true">
+          <span className="text-base sm:text-sm text-slate-400" aria-hidden="true">
             ({product.review_count})
           </span>
         </div>
 
         <div className="flex items-center justify-between mt-auto pt-3 gap-2">
           <div className="flex flex-col min-w-0">
-            <span className="text-sm lg:text-lg font-bold text-slate-900">
+            <span className="text-base lg:text-lg font-bold text-slate-900">
               {formatPrice(product.price)}
             </span>
             {product.compare_at_price && (
-              <span className="text-xs text-slate-400 line-through">
+              <span className="text-sm text-slate-400 line-through">
                 {formatPrice(product.compare_at_price)}
               </span>
             )}

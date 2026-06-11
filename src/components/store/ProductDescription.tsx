@@ -14,8 +14,8 @@ function SpecRow({
 }) {
   return (
     <div className="contents">
-      <dt className="text-sm font-semibold text-slate-900">{spec.label}</dt>
-      <dd className="text-sm text-slate-600">{spec.value}</dd>
+      <dt className="text-base sm:text-sm font-semibold text-slate-900">{spec.label}</dt>
+      <dd className="text-base sm:text-sm text-slate-600">{spec.value}</dd>
     </div>
   );
 }
@@ -27,7 +27,7 @@ function FeatureItem({
 }) {
   return (
     <li
-      className="text-sm text-slate-600 pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-slate-400"
+      className="text-base sm:text-sm text-slate-600 pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-slate-400"
     >
       {feature.text}
     </li>
@@ -52,7 +52,7 @@ function BlockGroup({
           block.type === "paragraph" ? (
             <p
               key={`p-${startIndex + i}`}
-              className="text-sm text-slate-600 leading-relaxed"
+              className="text-base sm:text-sm text-slate-600 leading-relaxed"
             >
               {block.text}
             </p>
@@ -65,7 +65,7 @@ function BlockGroup({
   if (firstType === "spec") {
     return (
       <div>
-        <h3 className="text-sm font-bold text-slate-900">Specifications</h3>
+        <h3 className="text-base font-bold text-slate-900">Specifications</h3>
         <dl className="mt-3 grid gap-x-4 gap-y-2 sm:grid-cols-[minmax(7rem,auto)_1fr]">
           {blocks.map((block, i) =>
             block.type === "spec" ? (
@@ -79,7 +79,7 @@ function BlockGroup({
 
   return (
     <div>
-      <h3 className="text-sm font-bold text-slate-900">Features</h3>
+      <h3 className="text-base font-bold text-slate-900">Features</h3>
       <ul className="mt-3 space-y-1.5">
         {blocks.map((block, i) =>
           block.type === "feature" ? (
@@ -114,7 +114,7 @@ export function ProductDescription({ description }: Props) {
 
   if (!blocks.length) {
     return (
-      <p className="text-sm text-slate-400 italic">
+      <p className="text-base sm:text-sm text-slate-400 italic">
         No description available for this product.
       </p>
     );
@@ -122,7 +122,7 @@ export function ProductDescription({ description }: Props) {
 
   if (!hasStructuredContent && blocks.length === 1 && blocks[0].type === "paragraph") {
     return (
-      <p className="text-sm text-slate-600 leading-relaxed">{blocks[0].text}</p>
+      <p className="text-base sm:text-sm text-slate-600 leading-relaxed">{blocks[0].text}</p>
     );
   }
 

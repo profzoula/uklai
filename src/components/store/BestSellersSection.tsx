@@ -28,10 +28,10 @@ function BestSellerCard({ product }: { product: Product }) {
   const outOfStock = product.stock <= 0;
 
   return (
-    <article className="shrink-0 w-[168px] sm:w-[190px] bg-white rounded-lg overflow-hidden flex flex-col shadow-sm">
+    <article className="shrink-0 w-[200px] sm:w-[210px] bg-white rounded-lg overflow-hidden flex flex-col shadow-sm">
       <Link href={`/products/${product.slug}`} className="relative block p-3 pb-0">
         {save !== null && (
-          <span className="absolute top-2 left-2 z-10 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm">
+          <span className="absolute top-2 left-2 z-10 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-sm">
             Save {formatPrice(save)}
           </span>
         )}
@@ -50,13 +50,13 @@ function BestSellerCard({ product }: { product: Product }) {
       <div className="px-3 pt-2 pb-3 flex flex-col flex-1 text-left">
         <Link href={`/products/${product.slug}`}>
           <h3
-            className="text-[11px] sm:text-xs font-medium text-primary line-clamp-3 leading-[1.35] h-[3.65rem] overflow-hidden hover:underline"
+            className="text-sm font-medium text-primary line-clamp-3 leading-[1.35] min-h-[3.75rem] overflow-hidden hover:underline"
             title={product.name}
           >
             {product.name}
           </h3>
         </Link>
-        <p className="mt-1.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+        <p className="mt-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
           Top seller
         </p>
         <div className="mt-1">
@@ -72,7 +72,7 @@ function BestSellerCard({ product }: { product: Product }) {
         {save !== null && (
           <button
             type="button"
-            className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 bg-amber-50 border border-amber-100 rounded-full px-2 py-1 w-fit"
+            className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-slate-700 bg-amber-50 border border-amber-100 rounded-full px-2.5 py-1 w-fit"
           >
             + 1 offer for you
             <ChevronSm className="w-3 h-3" />
@@ -82,7 +82,7 @@ function BestSellerCard({ product }: { product: Product }) {
           type="button"
           disabled={outOfStock}
           onClick={() => addItem(product)}
-          className="mt-auto pt-3 w-full py-2 rounded-full text-xs sm:text-sm font-bold transition-colors disabled:bg-slate-200 disabled:text-slate-500 bg-[#fff200] text-slate-900 hover:bg-yellow-300"
+          className="mt-auto pt-3 w-full py-2.5 rounded-full text-sm font-bold transition-colors disabled:bg-slate-200 disabled:text-slate-500 bg-[#fff200] text-slate-900 hover:bg-yellow-300"
         >
           {outOfStock ? "Sold Out" : "Add to cart"}
         </button>
@@ -117,7 +117,7 @@ export function BestSellersSection({
           {/* Promo banner */}
           <div className="relative bg-gradient-to-r from-[#0ea5e9] via-[#0046be] to-[#4338ca] px-6 sm:px-10 py-8 sm:py-10 min-h-[180px] sm:min-h-[200px] flex items-center overflow-hidden">
             <div className="relative z-10 max-w-lg">
-              <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/80 mb-2">
+              <p className="text-xs sm:text-sm font-bold uppercase tracking-widest text-white/80 mb-2">
                 {title}
               </p>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight">

@@ -57,10 +57,10 @@ function DealProductCard({ product }: { product: Product }) {
   const outOfStock = product.stock <= 0;
 
   return (
-    <article className="flex-shrink-0 w-[176px] sm:w-[196px] bg-white border border-slate-200 rounded-lg overflow-hidden flex flex-col">
+    <article className="flex-shrink-0 w-[200px] sm:w-[210px] bg-white border border-slate-200 rounded-lg overflow-hidden flex flex-col">
       <Link href={`/products/${product.slug}`} className="relative block p-3 pb-0">
         {save !== null && (
-          <span className="absolute top-2 left-2 z-10 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm">
+          <span className="absolute top-2 left-2 z-10 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-sm">
             Save {formatPrice(save)}
           </span>
         )}
@@ -79,7 +79,7 @@ function DealProductCard({ product }: { product: Product }) {
       <div className="px-3 pt-2 pb-3 flex flex-col flex-1">
         <Link href={`/products/${product.slug}`} className="block overflow-hidden">
           <h3
-            className="text-[11px] sm:text-xs font-medium text-slate-900 line-clamp-3 leading-[1.35] h-[3.65rem] hover:text-primary"
+            className="text-sm font-medium text-slate-900 line-clamp-3 leading-[1.35] min-h-[3.75rem] hover:text-primary"
             title={product.name}
           >
             {product.name}
@@ -99,7 +99,7 @@ function DealProductCard({ product }: { product: Product }) {
           type="button"
           disabled={outOfStock}
           onClick={() => addItem(product)}
-          className="mt-auto pt-3 w-full py-2 rounded-full text-xs sm:text-sm font-bold transition-colors disabled:bg-slate-200 disabled:text-slate-500 bg-[#fff200] text-slate-900 hover:bg-yellow-300"
+          className="mt-auto pt-3 w-full py-2.5 rounded-full text-sm font-bold transition-colors disabled:bg-slate-200 disabled:text-slate-500 bg-[#fff200] text-slate-900 hover:bg-yellow-300"
         >
           {outOfStock ? "Sold Out" : "Add to cart"}
         </button>
@@ -126,7 +126,7 @@ export function DealOfTheDay({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex gap-0 border border-slate-200 rounded-xl overflow-hidden bg-slate-50 shadow-sm">
           {/* Banner */}
-          <div className="flex flex-col shrink-0 w-[140px] sm:w-[168px] lg:w-[180px]">
+          <div className="flex flex-col shrink-0 w-[152px] sm:w-[168px] lg:w-[180px]">
             <div className="flex-1 m-2 mb-0 rounded-lg border-4 border-[#fff200] bg-gradient-to-b from-[#0ea5e9] to-[#0046be] p-3 sm:p-4 flex flex-col justify-center text-center min-h-[200px]">
               <p className="text-[#fff200] font-extrabold text-sm sm:text-base leading-tight uppercase tracking-wide">
                 Deal of
@@ -140,7 +140,7 @@ export function DealOfTheDay({
                 <span className="text-sm opacity-80">:</span>
                 <span className="text-lg sm:text-xl">{pad(countdown.secs)}</span>
               </div>
-              <div className="mt-1 flex justify-center gap-2 sm:gap-3 text-[9px] sm:text-[10px] text-white/80 uppercase">
+              <div className="mt-1 flex justify-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-white/80 uppercase">
                 <span>hrs</span>
                 <span>mins</span>
                 <span>secs</span>

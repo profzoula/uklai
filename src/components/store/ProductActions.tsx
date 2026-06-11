@@ -70,7 +70,7 @@ export function ProductActions({ product }: Props) {
         <button
           type="button"
           onClick={handleAddToCart}
-          className="flex-1 inline-flex items-center justify-center gap-2 py-4 bg-primary text-white rounded-xl font-bold text-sm uppercase tracking-wide hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          className="flex-1 inline-flex items-center justify-center gap-2 py-4 bg-primary text-white rounded-xl font-bold text-base sm:text-sm uppercase tracking-wide hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
           <ShoppingCart className="w-5 h-5" aria-hidden="true" />
           Add to cart
@@ -80,7 +80,7 @@ export function ProductActions({ product }: Props) {
       <button
         type="button"
         onClick={handleBuyNow}
-        className="w-full py-3.5 border-2 border-slate-200 text-slate-900 rounded-xl font-semibold text-sm hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="w-full py-3.5 border-2 border-slate-200 text-slate-900 rounded-xl font-semibold text-base sm:text-sm hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
         Buy now
       </button>

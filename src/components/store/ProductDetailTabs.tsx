@@ -29,7 +29,7 @@ export function ProductDetailTabs({
           aria-selected={tab === "description"}
           onClick={() => setTab("description")}
           className={cn(
-            "pb-3 text-sm font-semibold transition-colors border-b-2 -mb-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-t",
+            "pb-3 text-base sm:text-sm font-semibold transition-colors border-b-2 -mb-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-t",
             tab === "description"
               ? "border-primary text-primary"
               : "border-transparent text-slate-500 hover:text-slate-800"
@@ -43,7 +43,7 @@ export function ProductDetailTabs({
           aria-selected={tab === "reviews"}
           onClick={() => setTab("reviews")}
           className={cn(
-            "pb-3 text-sm font-semibold transition-colors border-b-2 -mb-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-t",
+            "pb-3 text-base sm:text-sm font-semibold transition-colors border-b-2 -mb-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-t",
             tab === "reviews"
               ? "border-primary text-primary"
               : "border-transparent text-slate-500 hover:text-slate-800"

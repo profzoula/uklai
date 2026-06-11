@@ -18,10 +18,10 @@ function FeaturedCard({ product }: { product: Product }) {
   const href = `/products/${product.slug}`;
 
   return (
-    <article className="snap-start shrink-0 w-[176px] h-[272px] bg-white rounded-xl overflow-hidden shadow-md grid grid-rows-[36px_130px_4.5rem_auto]">
+    <article className="snap-start shrink-0 w-[200px] h-[300px] sm:w-[210px] sm:h-[310px] bg-white rounded-xl overflow-hidden shadow-md grid grid-rows-[40px_140px_4.75rem_auto]">
       <div className="bg-slate-100 px-3 flex items-center gap-2 border-b border-slate-200 row-start-1">
         <Star className="w-3 h-3 text-[#fff200] fill-[#fff200] shrink-0" />
-        <p className="text-xs text-slate-600 truncate">
+        <p className="text-sm text-slate-600 truncate">
           <span className="font-bold text-slate-900">Featured</span>
         </p>
       </div>
@@ -44,13 +44,13 @@ function FeaturedCard({ product }: { product: Product }) {
 
       <Link
         href={href}
-        className="row-start-3 px-3 pt-2 text-[11px] sm:text-xs text-slate-800 line-clamp-3 leading-[1.35] hover:text-primary overflow-hidden"
+        className="row-start-3 px-3 pt-2 text-sm text-slate-800 line-clamp-3 leading-[1.35] hover:text-primary overflow-hidden"
         title={product.name}
       >
         {product.name}
       </Link>
 
-      <p className="row-start-4 px-3 pb-3 text-sm font-bold text-slate-900">
+      <p className="row-start-4 px-3 pb-3 text-base font-bold text-slate-900">
         {formatPrice(product.price)}
       </p>
     </article>
