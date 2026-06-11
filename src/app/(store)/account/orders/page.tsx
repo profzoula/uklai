@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Printer } from "lucide-react";
 import { getUser } from "@/lib/supabase/server";
 import { getUserOrders } from "@/lib/account-data";
 import { formatPrice, formatDate } from "@/lib/utils";
@@ -74,16 +75,27 @@ export default async function AccountOrdersPage() {
                 ))}
               </ul>
 
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
                 <p className="font-bold text-slate-900">
                   Total: {formatPrice(order.total)}
                 </p>
-                {order.tracking_number && (
-                  <p className="text-sm text-slate-600">
-                    Tracking ({order.tracking_carrier ?? "Carrier"}):{" "}
-                    <span className="font-medium">{order.tracking_number}</span>
-                  </p>
-                )}
+                <div className="flex flex-wrap items-center gap-3">
+                  {order.tracking_number && (
+                    <p className="text-sm text-slate-600">
+                      Tracking ({order.tracking_carrier ?? "Carrier"}):{" "}
+                      <span className="font-medium">
+                        {order.tracking_number}
+                      </span>
+                    </p>
+                  )}
+                  <Link
+                    href={`/invoice/${order.id}`}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+                  >
+                    <Printer className="w-4 h-4" aria-hidden="true" />
+                    Print invoice
+                  </Link>
+                </div>
               </div>
             </article>
           ))}

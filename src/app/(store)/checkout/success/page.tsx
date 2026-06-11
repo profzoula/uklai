@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { CheckCircle, ArrowRight, Download } from "lucide-react";
+import { CheckCircle, ArrowRight, Download, Printer } from "lucide-react";
 import { ClearCartOnSuccess } from "@/components/store/ClearCartOnSuccess";
 import { getOrderById, getOrderByStripeSession } from "@/lib/data";
+import { invoiceAccessQuery } from "@/lib/invoice-access";
 
 type Props = {
   searchParams: Promise<{ session_id?: string; order_id?: string; method?: string }>;
@@ -67,13 +68,24 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
         </div>
       )}
 
-      <Link
-        href="/shop"
-        className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition-colors"
-      >
-        Continue Shopping
-        <ArrowRight className="w-4 h-4" />
-      </Link>
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        {order && (
+          <Link
+            href={`/invoice/${order.id}?${invoiceAccessQuery(order)}`}
+            className="inline-flex items-center gap-2 border-2 border-slate-200 text-slate-800 px-6 py-3 rounded-xl font-semibold hover:bg-slate-50 transition-colors"
+          >
+            <Printer className="w-4 h-4" />
+            Print receipt
+          </Link>
+        )}
+        <Link
+          href="/shop"
+          className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition-colors"
+        >
+          Continue Shopping
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
     </div>
   );
 }

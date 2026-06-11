@@ -83,6 +83,7 @@ export type Order = {
   tracking_carrier: string | null;
   admin_notes: string | null;
   tax_amount: number | null;
+  payment_method?: string | null;
   created_at: string;
   updated_at: string;
   order_items?: OrderItem[];
