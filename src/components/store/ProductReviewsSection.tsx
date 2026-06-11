@@ -7,16 +7,22 @@ import { Star } from "lucide-react";
 type Props = {
   product: Product;
   reviews: ProductReview[];
+  embedded?: boolean;
 };
 
-export function ProductReviewsSection({ product, reviews }: Props) {
-  return (
-    <section className="mt-10 pt-8 border-t border-slate-100">
-      <div className="border border-slate-200 rounded-lg p-5 sm:p-6">
-        <h2 className="text-base font-bold text-slate-900 mb-5">
-          Customer Reviews
-          {product.review_count > 0 ? ` (${product.review_count})` : ""}
-        </h2>
+export function ProductReviewsSection({
+  product,
+  reviews,
+  embedded = false,
+}: Props) {
+  const inner = (
+      <div className={embedded ? "" : "border border-slate-200 rounded-lg p-5 sm:p-6"}>
+        {!embedded && (
+          <h2 className="text-base font-bold text-slate-900 mb-5">
+            Customer Reviews
+            {product.review_count > 0 ? ` (${product.review_count})` : ""}
+          </h2>
+        )}
 
         {product.review_count > 0 && (
           <ProductReviewsSummary product={product} embedded />
@@ -62,6 +68,11 @@ export function ProductReviewsSection({ product, reviews }: Props) {
 
         <ProductReviewForm productId={product.id} productSlug={product.slug} />
       </div>
-    </section>
+  );
+
+  if (embedded) return inner;
+
+  return (
+    <section className="mt-10 pt-8 border-t border-slate-100">{inner}</section>
   );
 }

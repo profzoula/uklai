@@ -6,12 +6,17 @@ import { cn } from "@/lib/utils";
 type Props = {
   images: string[];
   productName: string;
+  discountPercent?: number | null;
 };
 
 const THUMB_CLASS =
   "relative w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] rounded-lg overflow-hidden border-2 bg-white shrink-0 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
 
-export function ProductGallery({ images, productName }: Props) {
+export function ProductGallery({
+  images,
+  productName,
+  discountPercent,
+}: Props) {
   const gallery = images.length > 0 ? images : [];
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -27,7 +32,12 @@ export function ProductGallery({ images, productName }: Props) {
     <div className="flex flex-col sm:flex-row gap-4">
       {/* Main image */}
       <div className="flex-1 order-1 sm:order-2 min-w-0">
-        <div className="aspect-square rounded-xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white overflow-hidden">
+        <div className="relative aspect-square rounded-xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white overflow-hidden">
+          {discountPercent != null && discountPercent > 0 && (
+            <span className="absolute top-3 left-3 z-10 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">
+              -{discountPercent}%
+            </span>
+          )}
           <div className="flex h-full w-full items-center justify-center p-4 sm:p-6 lg:p-8">
             <img
               src={activeSrc}
