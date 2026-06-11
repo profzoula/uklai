@@ -543,8 +543,9 @@ export async function getCollectionWithProducts(id: string): Promise<{
 
   const { data: links } = await supabase
     .from("collection_products")
-    .select("product_id")
-    .eq("collection_id", id);
+    .select("product_id, sort_order")
+    .eq("collection_id", id)
+    .order("sort_order", { ascending: true });
 
   let products: import("@/lib/admin-data-types").CollectionProductRow[] = [];
 
@@ -555,7 +556,11 @@ export async function getCollectionWithProducts(id: string): Promise<{
       .select("id, name, slug, sku, price, image_url")
       .in("id", ids);
 
-    products = (productRows ?? []) as import("@/lib/admin-data-types").CollectionProductRow[];
+    const { orderByCollectionLinks } = await import("@/lib/collection-products");
+    products = orderByCollectionLinks(
+      (productRows ?? []) as import("@/lib/admin-data-types").CollectionProductRow[],
+      links
+    );
   }
 
   const collection: Collection = {

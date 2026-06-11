@@ -14,9 +14,10 @@ async function syncProducts(collectionId: string, productIds: string[]) {
 
   if (productIds.length) {
     const { error } = await supabase.from("collection_products").insert(
-      productIds.map((product_id) => ({
+      productIds.map((product_id, sort_order) => ({
         collection_id: collectionId,
         product_id,
+        sort_order,
       }))
     );
     if (error) return { error: error.message };

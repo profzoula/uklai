@@ -10,7 +10,8 @@
     "setup:db": "node scripts/setup-database.mjs",
     "import:aliexpress": "node scripts/import-aliexpress-csv.mjs",
     "sync:profiles": "node scripts/sync-profiles.mjs",
-    "migrate:legacy": "node scripts/migrate-legacy-catalog.mjs"
+    "migrate:legacy": "node scripts/migrate-legacy-catalog.mjs",
+    "db:collection-order": "node scripts/add-collection-sort-order.mjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.7.0",

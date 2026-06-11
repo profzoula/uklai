@@ -3,7 +3,15 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Plus, Trash2, Search, X } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronUp,
+  ChevronDown,
+  Plus,
+  Trash2,
+  Search,
+  X,
+} from "lucide-react";
 import { slugify, formatPrice } from "@/lib/utils";
 import type { Collection, CollectionProductRow } from "@/lib/admin-data-types";
 
@@ -123,6 +131,18 @@ export function CollectionForm({ collection, initialProducts = [] }: Props) {
 
   function removeProduct(id: string) {
     setAssignedProducts((prev) => prev.filter((p) => p.id !== id));
+  }
+
+  function moveProduct(id: string, direction: "up" | "down") {
+    setAssignedProducts((prev) => {
+      const index = prev.findIndex((p) => p.id === id);
+      if (index === -1) return prev;
+      const target = direction === "up" ? index - 1 : index + 1;
+      if (target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -248,7 +268,7 @@ export function CollectionForm({ collection, initialProducts = [] }: Props) {
 
         <Panel
           title="Products"
-          subtitle="Manage the products assigned to this collection."
+          subtitle="Drag order with arrows — first products show first on the homepage for this collection."
           action={
             <button
               type="button"
@@ -281,6 +301,9 @@ export function CollectionForm({ collection, initialProducts = [] }: Props) {
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 text-slate-600">
                   <tr>
+                    <th className="text-left px-4 py-3 font-semibold w-24">
+                      Order
+                    </th>
                     <th className="text-left px-4 py-3 font-semibold">
                       Product
                     </th>
@@ -294,11 +317,47 @@ export function CollectionForm({ collection, initialProducts = [] }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAssigned.map((product) => (
+                  {filteredAssigned.map((product) => {
+                    const index = assignedProducts.findIndex(
+                      (p) => p.id === product.id
+                    );
+                    const canReorder = !listSearch.trim();
+
+                    return (
                     <tr
                       key={product.id}
                       className="border-t border-slate-100 hover:bg-slate-50"
                     >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs font-semibold text-slate-400 w-5 text-center">
+                            {index + 1}
+                          </span>
+                          <div className="flex flex-col">
+                            <button
+                              type="button"
+                              disabled={!canReorder || index === 0}
+                              onClick={() => moveProduct(product.id, "up")}
+                              className="p-0.5 text-slate-400 hover:text-primary disabled:opacity-30"
+                              aria-label="Move up"
+                            >
+                              <ChevronUp className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={
+                                !canReorder ||
+                                index === assignedProducts.length - 1
+                              }
+                              onClick={() => moveProduct(product.id, "down")}
+                              className="p-0.5 text-slate-400 hover:text-primary disabled:opacity-30"
+                              aria-label="Move down"
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden shrink-0">
@@ -333,7 +392,8 @@ export function CollectionForm({ collection, initialProducts = [] }: Props) {
                         </button>
                       </td>
                     </tr>
-                  ))}
+                  );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -341,7 +401,9 @@ export function CollectionForm({ collection, initialProducts = [] }: Props) {
 
           <p className="text-xs text-slate-400 mt-3">
             {assignedProducts.length} item
-            {assignedProducts.length !== 1 ? "s" : ""} assigned
+            {assignedProducts.length !== 1 ? "s" : ""} assigned · position 1
+            appears first on the storefront
+            {listSearch.trim() ? " · clear search to reorder" : ""}
           </p>
         </Panel>
 

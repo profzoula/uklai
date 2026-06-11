@@ -418,8 +418,9 @@ export async function getProductsByCollectionSlug(
   if (collection) {
     const { data: links } = await supabase
       .from("collection_products")
-      .select("product_id")
-      .eq("collection_id", collection.id);
+      .select("product_id, sort_order")
+      .eq("collection_id", collection.id)
+      .order("sort_order", { ascending: true });
 
     if (links?.length) {
       const productIds = links.map((l) => l.product_id);
@@ -427,10 +428,17 @@ export async function getProductsByCollectionSlug(
         .from("products")
         .select("*, categories(*)")
         .in("id", productIds)
-        .eq("active", true)
-        .limit(limit);
+        .eq("active", true);
 
-      if (products?.length) return products as Product[];
+      if (products?.length) {
+        const { orderByCollectionLinks } = await import(
+          "@/lib/collection-products"
+        );
+        return orderByCollectionLinks(products as Product[], links).slice(
+          0,
+          limit
+        );
+      }
     }
   }
 

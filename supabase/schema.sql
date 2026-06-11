@@ -180,8 +180,11 @@ CREATE TABLE IF NOT EXISTS collections (
 CREATE TABLE IF NOT EXISTS collection_products (
   collection_id UUID REFERENCES collections(id) ON DELETE CASCADE,
   product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  sort_order INT DEFAULT 0,
   PRIMARY KEY (collection_id, product_id)
 );
+
+ALTER TABLE collection_products ADD COLUMN IF NOT EXISTS sort_order INT DEFAULT 0;
 
 -- Attributes
 CREATE TABLE IF NOT EXISTS attributes (
