@@ -304,7 +304,13 @@ ALTER TABLE product_variants ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Product variants viewable by everyone" ON product_variants FOR SELECT USING (true);
 CREATE POLICY "Admins manage product variants" ON product_variants FOR ALL USING (
   EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
+) WITH CHECK (
+  EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true)
 );
+
+GRANT SELECT ON product_variants TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON product_variants TO authenticated;
+GRANT ALL ON product_variants TO service_role;
 
 INSERT INTO attributes (name, slug, type, values) VALUES
   ('Color', 'color', 'color', '["Black","White","Red","Blue","Green"]'),

@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { adminUnavailable, getAdminSupabase } from "@/lib/admin-api";
+import {
+  adminUnavailable,
+  getAuthorizedAdminSupabase,
+} from "@/lib/admin-api";
+import { createServiceClient } from "@/lib/supabase/service";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -48,7 +52,11 @@ function parseVariantInput(raw: unknown, index: number): VariantInput | string {
 
 export async function GET(_request: Request, { params }: Props) {
   const { id } = await params;
-  const supabase = await getAdminSupabase();
+  const { supabase: sessionClient, error: authError } =
+    await getAuthorizedAdminSupabase();
+  if (authError) return authError;
+
+  const supabase = createServiceClient() ?? sessionClient;
   if (!supabase) return adminUnavailable();
 
   const { data, error } = await supabase
@@ -75,7 +83,11 @@ export async function GET(_request: Request, { params }: Props) {
 
 export async function PUT(request: Request, { params }: Props) {
   const { id } = await params;
-  const supabase = await getAdminSupabase();
+  const { supabase: sessionClient, error: authError } =
+    await getAuthorizedAdminSupabase();
+  if (authError) return authError;
+
+  const supabase = createServiceClient() ?? sessionClient;
   if (!supabase) return adminUnavailable();
 
   let body: { variants?: unknown[] };
