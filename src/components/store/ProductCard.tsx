@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Star, ShoppingCart } from "lucide-react";
 import type { Product } from "@/types/database";
+import { getDisplayPrices } from "@/lib/product-pricing";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
 
@@ -13,6 +14,7 @@ type Props = {
 export function ProductCard({ product }: Props) {
   const addItem = useCartStore((s) => s.addItem);
   const outOfStock = product.stock <= 0;
+  const prices = getDisplayPrices(product.price, product.compare_at_price);
   const ratingLabel = `${product.rating} out of 5 stars, ${product.review_count} reviews`;
 
   return (
@@ -67,11 +69,11 @@ export function ProductCard({ product }: Props) {
         <div className="flex items-center justify-between mt-auto pt-3 gap-2">
           <div className="flex flex-col min-w-0">
             <span className="text-base lg:text-lg font-bold text-slate-900">
-              {formatPrice(product.price)}
+              {formatPrice(prices.currentPrice)}
             </span>
-            {product.compare_at_price && (
+            {prices.onSale && prices.regularPrice != null && (
               <span className="text-sm text-slate-400 line-through">
-                {formatPrice(product.compare_at_price)}
+                {formatPrice(prices.regularPrice)}
               </span>
             )}
           </div>

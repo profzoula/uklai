@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Product } from "@/types/database";
+import { getDisplayPrices } from "@/lib/product-pricing";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
 
@@ -15,10 +16,12 @@ type Props = {
 };
 
 function savingsAmount(product: Product): number | null {
-  if (!product.compare_at_price || product.compare_at_price <= product.price) {
-    return null;
-  }
-  return product.compare_at_price - product.price;
+  const { onSale, currentPrice, regularPrice } = getDisplayPrices(
+    product.price,
+    product.compare_at_price
+  );
+  if (!onSale || regularPrice == null) return null;
+  return regularPrice - currentPrice;
 }
 
 function useCountdown() {
@@ -86,14 +89,24 @@ function DealProductCard({ product }: { product: Product }) {
           </h3>
         </Link>
         <div className="mt-2">
-          <p className="text-base font-bold text-slate-900">
-            {formatPrice(product.price)}
-          </p>
-          {product.compare_at_price && (
-            <p className="text-xs text-slate-400 line-through">
-              {formatPrice(product.compare_at_price)}
-            </p>
-          )}
+          {(() => {
+            const prices = getDisplayPrices(
+              product.price,
+              product.compare_at_price
+            );
+            return (
+              <>
+                <p className="text-base font-bold text-slate-900">
+                  {formatPrice(prices.currentPrice)}
+                </p>
+                {prices.onSale && prices.regularPrice != null && (
+                  <p className="text-xs text-slate-400 line-through">
+                    {formatPrice(prices.regularPrice)}
+                  </p>
+                )}
+              </>
+            );
+          })()}
         </div>
         <button
           type="button"

@@ -163,6 +163,8 @@ export type NewsletterSubscriber = {
 export type CartItem = {
   product: Product;
   quantity: number;
+  variantId?: string | null;
+  variantLabel?: string | null;
 };
 
 export type DashboardStats = {

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag, Tag } from "lucide-react";
 import { useCartStore } from "@/store/cart";
+import { cartLineKey } from "@/lib/product-variant-utils";
 import { formatPrice } from "@/lib/utils";
 import { useState, useEffect } from "react";
 
@@ -26,7 +27,10 @@ export default function CartPage() {
 
   const cartItems = items.map((item) => ({
     productId: item.product.id,
-    name: item.product.name,
+    variantId: item.variantId ?? null,
+    name: item.variantLabel
+      ? `${item.product.name} (${item.variantLabel})`
+      : item.product.name,
     price: item.product.price,
     quantity: item.quantity,
     image: item.product.image_url,
@@ -176,9 +180,11 @@ export default function CartPage() {
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
-          {items.map((item) => (
+          {items.map((item) => {
+            const lineKey = cartLineKey(item.product.id, item.variantId);
+            return (
             <div
-              key={item.product.id}
+              key={lineKey}
               className="flex flex-col sm:flex-row gap-4 p-4 bg-white rounded-2xl border border-slate-200"
             >
               <div className="w-24 h-24 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 flex-shrink-0">
@@ -199,6 +205,12 @@ export default function CartPage() {
                   className="font-semibold text-slate-900 hover:text-primary"
                 >
                   {item.product.name}
+                  {item.variantLabel ? (
+                    <span className="text-slate-500 font-normal">
+                      {" "}
+                      — {item.variantLabel}
+                    </span>
+                  ) : null}
                 </Link>
                 <p className="text-lg font-bold text-slate-900 mt-1">
                   {formatPrice(item.product.price)}
@@ -209,7 +221,7 @@ export default function CartPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        updateQuantity(item.product.id, item.quantity - 1)
+                        updateQuantity(lineKey, item.quantity - 1)
                       }
                       className="min-w-[44px] min-h-[44px] p-2 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
                       aria-label={`Decrease quantity of ${item.product.name}`}
@@ -222,7 +234,7 @@ export default function CartPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        updateQuantity(item.product.id, item.quantity + 1)
+                        updateQuantity(lineKey, item.quantity + 1)
                       }
                       disabled={item.quantity >= item.product.stock}
                       className="min-w-[44px] min-h-[44px] p-2 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
@@ -234,7 +246,7 @@ export default function CartPage() {
 
                   <button
                     type="button"
-                    onClick={() => removeItem(item.product.id)}
+                    onClick={() => removeItem(lineKey)}
                     className="min-w-[44px] min-h-[44px] p-2 text-red-500 hover:bg-red-50 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                     aria-label={`Remove ${item.product.name} from cart`}
                   >
@@ -247,7 +259,8 @@ export default function CartPage() {
                 {formatPrice(item.product.price * item.quantity)}
               </p>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 p-6 h-fit sticky top-24">

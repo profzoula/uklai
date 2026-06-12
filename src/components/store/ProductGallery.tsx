@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type Props = {
   images: string[];
   productName: string;
   discountPercent?: number | null;
+  preferredImage?: string | null;
 };
 
 const THUMB_CLASS =
@@ -16,9 +17,16 @@ export function ProductGallery({
   images,
   productName,
   discountPercent,
+  preferredImage,
 }: Props) {
   const gallery = images.length > 0 ? images : [];
   const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    if (!preferredImage || !gallery.length) return;
+    const idx = gallery.indexOf(preferredImage);
+    if (idx >= 0) setActiveIndex(idx);
+  }, [preferredImage, gallery]);
 
   if (gallery.length === 0) {
     return (

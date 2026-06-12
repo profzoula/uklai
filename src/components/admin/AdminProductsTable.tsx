@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Product } from "@/types/database";
+import { getDisplayPrices } from "@/lib/product-pricing";
 import { formatPrice } from "@/lib/utils";
 import { AdminRowActions } from "@/components/admin/AdminRowActions";
 
@@ -165,7 +166,12 @@ export function AdminProductsTable({ products }: Props) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {products.map((product) => (
+            {products.map((product) => {
+              const prices = getDisplayPrices(
+                product.price,
+                product.compare_at_price
+              );
+              return (
               <tr
                 key={product.id}
                 onClick={() => router.push(`/admin/products/${product.id}`)}
@@ -202,12 +208,12 @@ export function AdminProductsTable({ products }: Props) {
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <p className="text-sm font-semibold">
-                    {formatPrice(product.price)}
+                  <p className="text-sm font-semibold text-slate-900">
+                    {formatPrice(prices.currentPrice)}
                   </p>
-                  {product.compare_at_price && (
+                  {prices.onSale && prices.regularPrice != null && (
                     <p className="text-xs text-slate-400 line-through">
-                      {formatPrice(product.compare_at_price)}
+                      {formatPrice(prices.regularPrice)}
                     </p>
                   )}
                 </td>
@@ -251,7 +257,8 @@ export function AdminProductsTable({ products }: Props) {
                   />
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>

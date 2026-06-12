@@ -21,6 +21,11 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { slugify } from "@/lib/utils";
+import {
+  dbPricesToFormFields,
+  formFieldsToDbPrices,
+  validateFormPrices,
+} from "@/lib/product-pricing";
 import type { Attribute } from "@/lib/admin-data-types";
 import type { Category, Product } from "@/types/database";
 import { ProductMediaGallery } from "@/components/admin/ProductMediaGallery";
@@ -140,12 +145,17 @@ export function DigitalProductForm({ product }: Props) {
     !!product?.digital_file_url
   );
 
+  const initialPrices = dbPricesToFormFields(
+    product?.price ?? 0,
+    product?.compare_at_price
+  );
+
   const [form, setForm] = useState({
     name: product?.name ?? "",
     slug: product?.slug ?? "",
     sku: product?.sku ?? "",
-    price: product?.price?.toString() ?? "",
-    compare_at_price: product?.compare_at_price?.toString() ?? "",
+    regular_price: initialPrices.regular_price,
+    sale_price: initialPrices.sale_price,
     category_id: product?.category_id ?? "",
     tax_class: product?.tax_class ?? "none",
     description: product?.description ?? "",
@@ -195,15 +205,18 @@ export function DigitalProductForm({ product }: Props) {
     const active =
       form.status === "enabled" && form.visibility === "catalog_search";
 
+    const { price, compare_at_price } = formFieldsToDbPrices(
+      form.regular_price,
+      form.sale_price
+    );
+
     return {
       name: form.name.trim(),
       slug: form.slug.trim() || slugify(form.name),
       sku: form.sku.trim() || autoSku(form.name),
       description: form.description.trim() || null,
-      price: parseFloat(form.price),
-      compare_at_price: form.compare_at_price
-        ? parseFloat(form.compare_at_price)
-        : null,
+      price,
+      compare_at_price,
       image_url: form.image_url.trim() || gallery[0] || null,
       gallery_urls: gallery,
       category_id: form.category_id || null,
@@ -268,6 +281,11 @@ export function DigitalProductForm({ product }: Props) {
     return saveError;
   }
 
+  const salePriceError = validateFormPrices(
+    form.regular_price,
+    form.sale_price
+  );
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.digital_file_url.trim()) {
@@ -275,6 +293,16 @@ export function DigitalProductForm({ product }: Props) {
       setFileLinkMode(true);
       return;
     }
+
+    const priceError = validateFormPrices(
+      form.regular_price,
+      form.sale_price
+    );
+    if (priceError) {
+      setError(priceError);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     const saveError = await persistProduct(
@@ -427,9 +455,9 @@ export function DigitalProductForm({ product }: Props) {
                       step="0.01"
                       min="0"
                       required
-                      value={form.price}
+                      value={form.regular_price}
                       onChange={(e) =>
-                        setForm({ ...form, price: e.target.value })
+                        setForm({ ...form, regular_price: e.target.value })
                       }
                       className={`${inputClass} pr-12`}
                     />
@@ -447,16 +475,24 @@ export function DigitalProductForm({ product }: Props) {
                       type="number"
                       step="0.01"
                       min="0"
-                      value={form.compare_at_price}
+                      value={form.sale_price}
                       onChange={(e) =>
-                        setForm({ ...form, compare_at_price: e.target.value })
+                        setForm({ ...form, sale_price: e.target.value })
                       }
-                      className={`${inputClass} pr-12`}
+                      aria-invalid={!!salePriceError}
+                      className={`${inputClass} pr-12 ${
+                        salePriceError
+                          ? "border-red-300 focus:border-red-400 focus:ring-red-200"
+                          : ""
+                      }`}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
                       USD
                     </span>
                   </div>
+                  {salePriceError && (
+                    <p className="mt-1.5 text-xs text-red-600">{salePriceError}</p>
+                  )}
                 </div>
               </div>
 

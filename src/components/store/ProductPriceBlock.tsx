@@ -1,4 +1,5 @@
-import { formatPrice, calculateDiscount } from "@/lib/utils";
+import { getDisplayPrices } from "@/lib/product-pricing";
+import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types/database";
 
 type Props = {
@@ -6,11 +7,16 @@ type Props = {
 };
 
 export function ProductPriceBlock({ product }: Props) {
-  const discount = calculateDiscount(product.price, product.compare_at_price);
-  const savings =
-    product.compare_at_price && product.compare_at_price > product.price
-      ? product.compare_at_price - product.price
+  const { currentPrice, regularPrice, onSale } = getDisplayPrices(
+    product.price,
+    product.compare_at_price
+  );
+  const discount =
+    onSale && regularPrice != null
+      ? Math.round(((regularPrice - currentPrice) / regularPrice) * 100)
       : null;
+  const savings =
+    onSale && regularPrice != null ? regularPrice - currentPrice : null;
 
   return (
     <div className="flex flex-wrap items-end gap-3">
@@ -20,11 +26,11 @@ export function ProductPriceBlock({ product }: Props) {
         </span>
       )}
       <p className="text-4xl sm:text-4xl font-bold text-red-600 leading-none">
-        {formatPrice(product.price)}
+        {formatPrice(currentPrice)}
       </p>
-      {product.compare_at_price && product.compare_at_price > product.price && (
+      {onSale && regularPrice != null && (
         <p className="text-xl sm:text-lg text-slate-400 line-through pb-0.5">
-          {formatPrice(product.compare_at_price)}
+          {formatPrice(regularPrice)}
         </p>
       )}
       {savings !== null && (

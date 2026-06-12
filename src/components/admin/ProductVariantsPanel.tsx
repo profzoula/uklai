@@ -3,14 +3,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Camera, Loader2, Plus, Trash2 } from "lucide-react";
 import { uploadProductImage, resolveImageMime } from "@/lib/upload-product-image";
+import {
+  dbPricesToFormFields,
+  formFieldsToDbPrices,
+  validateFormPrices,
+} from "@/lib/product-pricing";
 
 export type VariantDraft = {
   key: string;
   sku: string;
   color: string;
   image_url: string;
-  price: string;
-  compare_at_price: string;
+  regular_price: string;
+  sale_price: string;
   stock: string;
 };
 
@@ -29,8 +34,8 @@ function emptyVariant(defaultPrice = ""): VariantDraft {
     sku: "",
     color: "",
     image_url: "",
-    price: defaultPrice,
-    compare_at_price: "",
+    regular_price: defaultPrice,
+    sale_price: "",
     stock: "0",
   };
 }
@@ -69,16 +74,18 @@ export function ProductVariantsPanel({
       }>;
       setVariants(
         rows.length
-          ? rows.map((row) => ({
-              key: crypto.randomUUID(),
-              sku: row.sku ?? "",
-              color: row.color ?? "",
-              image_url: row.image_url ?? "",
-              price: String(row.price),
-              compare_at_price:
-                row.compare_at_price != null ? String(row.compare_at_price) : "",
-              stock: String(row.stock ?? 0),
-            }))
+          ? rows.map((row) => {
+              const prices = dbPricesToFormFields(row.price, row.compare_at_price);
+              return {
+                key: crypto.randomUUID(),
+                sku: row.sku ?? "",
+                color: row.color ?? "",
+                image_url: row.image_url ?? "",
+                regular_price: prices.regular_price,
+                sale_price: prices.sale_price,
+                stock: String(row.stock ?? 0),
+              };
+            })
           : [emptyVariant(defaultPrice)]
       );
     } catch {
@@ -130,32 +137,47 @@ export function ProductVariantsPanel({
     setError(null);
     setSuccess(null);
 
-    const payload = variants
-      .filter(
-        (row) =>
-          row.color.trim() ||
-          row.sku.trim() ||
-          row.image_url.trim() ||
-          row.price.trim()
-      )
-      .map((row, index) => ({
-        sku: row.sku.trim() || null,
-        color: row.color.trim() || null,
-        image_url: row.image_url.trim() || null,
-        price: parseFloat(row.price),
-        compare_at_price: row.compare_at_price.trim()
-          ? parseFloat(row.compare_at_price)
-          : null,
-        stock: parseInt(row.stock, 10) || 0,
-        sort_order: index,
-      }));
+    const filledRows = variants.filter(
+      (row) =>
+        row.color.trim() ||
+        row.sku.trim() ||
+        row.image_url.trim() ||
+        row.regular_price.trim()
+    );
+
+    for (let i = 0; i < filledRows.length; i++) {
+      const row = filledRows[i];
+      const priceError = validateFormPrices(row.regular_price, row.sale_price);
+      if (priceError) {
+        const label = row.color.trim() || row.sku.trim() || `Variant ${i + 1}`;
+        setError(`${label}: ${priceError}`);
+        setSaving(false);
+        return;
+      }
+    }
+
+    const payload = filledRows.map((row, index) => {
+        const { price, compare_at_price } = formFieldsToDbPrices(
+          row.regular_price,
+          row.sale_price
+        );
+        return {
+          sku: row.sku.trim() || null,
+          color: row.color.trim() || null,
+          image_url: row.image_url.trim() || null,
+          price,
+          compare_at_price,
+          stock: parseInt(row.stock, 10) || 0,
+          sort_order: index,
+        };
+      });
 
     if (
       payload.some(
         (row) => Number.isNaN(row.price) || row.price < 0
       )
     ) {
-      setError("Each variant needs a valid price.");
+      setError("Each variant needs a valid regular price.");
       setSaving(false);
       return;
     }
@@ -229,7 +251,7 @@ export function ProductVariantsPanel({
                   <th className="pb-3 pr-3 font-semibold w-[72px]">Photo</th>
                   <th className="pb-3 pr-3 font-semibold min-w-[120px]">Color</th>
                   <th className="pb-3 pr-3 font-semibold min-w-[120px]">SKU</th>
-                  <th className="pb-3 pr-3 font-semibold w-[100px]">Price</th>
+                  <th className="pb-3 pr-3 font-semibold w-[100px]">Regular</th>
                   <th className="pb-3 pr-3 font-semibold w-[100px]">Sale</th>
                   <th className="pb-3 pr-3 font-semibold w-[80px]">Stock</th>
                   <th className="pb-3 font-semibold w-[44px]" aria-label="Actions" />
@@ -322,9 +344,9 @@ export function ProductVariantsPanel({
                         type="number"
                         step="0.01"
                         min="0"
-                        value={row.price}
+                        value={row.regular_price}
                         onChange={(e) =>
-                          updateVariant(row.key, { price: e.target.value })
+                          updateVariant(row.key, { regular_price: e.target.value })
                         }
                         className={inputClass}
                       />
@@ -334,10 +356,10 @@ export function ProductVariantsPanel({
                         type="number"
                         step="0.01"
                         min="0"
-                        value={row.compare_at_price}
+                        value={row.sale_price}
                         onChange={(e) =>
                           updateVariant(row.key, {
-                            compare_at_price: e.target.value,
+                            sale_price: e.target.value,
                           })
                         }
                         placeholder="Optional"

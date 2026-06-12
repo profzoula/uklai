@@ -1,4 +1,10 @@
-import type { Category, Product, Order, DashboardStats } from "@/types/database";
+import type {
+  Category,
+  Product,
+  ProductVariant,
+  Order,
+  DashboardStats,
+} from "@/types/database";
 import {
   isSupabaseConfigured,
   isSupabaseServerLive,
@@ -569,6 +575,27 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     return category ? { ...product, categories: category } : product;
   }
   return data;
+}
+
+export async function getProductVariants(
+  productId: string
+): Promise<ProductVariant[]> {
+  const supabase = await getDataSupabase();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("product_variants")
+    .select("*")
+    .eq("product_id", productId)
+    .eq("active", true)
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    if (/relation.*product_variants/i.test(error.message)) return [];
+    return [];
+  }
+
+  return (data ?? []) as ProductVariant[];
 }
 
 export async function getRelatedProducts(

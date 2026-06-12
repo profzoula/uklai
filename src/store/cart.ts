@@ -3,12 +3,22 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { CartItem, Product } from "@/types/database";
+import { cartLineKey } from "@/lib/product-variant-utils";
+
+type AddItemOptions = {
+  variantId?: string | null;
+  variantLabel?: string | null;
+};
 
 type CartStore = {
   items: CartItem[];
-  addItem: (product: Product, quantity?: number) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addItem: (
+    product: Product,
+    quantity?: number,
+    options?: AddItemOptions
+  ) => void;
+  removeItem: (lineKey: string) => void;
+  updateQuantity: (lineKey: string, quantity: number) => void;
   clearCart: () => void;
   getTotal: () => number;
   getItemCount: () => number;
@@ -19,11 +29,14 @@ export const useCartStore = create<CartStore>()(
     (set, get) => ({
       items: [],
 
-      addItem: (product, quantity = 1) => {
+      addItem: (product, quantity = 1, options) => {
         if (product.stock <= 0) return;
+        const lineKey = cartLineKey(product.id, options?.variantId);
+
         set((state) => {
           const existing = state.items.find(
-            (item) => item.product.id === product.id
+            (item) =>
+              cartLineKey(item.product.id, item.variantId) === lineKey
           );
           if (existing) {
             const nextQty = Math.min(
@@ -32,8 +45,15 @@ export const useCartStore = create<CartStore>()(
             );
             return {
               items: state.items.map((item) =>
-                item.product.id === product.id
-                  ? { ...item, quantity: nextQty }
+                cartLineKey(item.product.id, item.variantId) === lineKey
+                  ? {
+                      ...item,
+                      product,
+                      quantity: nextQty,
+                      variantId: options?.variantId ?? item.variantId,
+                      variantLabel:
+                        options?.variantLabel ?? item.variantLabel,
+                    }
                   : item
               ),
             };
@@ -41,26 +61,36 @@ export const useCartStore = create<CartStore>()(
           return {
             items: [
               ...state.items,
-              { product, quantity: Math.min(quantity, product.stock) },
+              {
+                product,
+                quantity: Math.min(quantity, product.stock),
+                variantId: options?.variantId ?? null,
+                variantLabel: options?.variantLabel ?? null,
+              },
             ],
           };
         });
       },
 
-      removeItem: (productId) => {
+      removeItem: (lineKey) => {
         set((state) => ({
-          items: state.items.filter((item) => item.product.id !== productId),
+          items: state.items.filter(
+            (item) =>
+              cartLineKey(item.product.id, item.variantId) !== lineKey
+          ),
         }));
       },
 
-      updateQuantity: (productId, quantity) => {
+      updateQuantity: (lineKey, quantity) => {
         if (quantity <= 0) {
-          get().removeItem(productId);
+          get().removeItem(lineKey);
           return;
         }
         set((state) => ({
           items: state.items.map((item) => {
-            if (item.product.id !== productId) return item;
+            if (cartLineKey(item.product.id, item.variantId) !== lineKey) {
+              return item;
+            }
             return {
               ...item,
               quantity: Math.min(quantity, item.product.stock),

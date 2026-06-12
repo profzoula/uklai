@@ -1,6 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProductBySlug, getRelatedProducts } from "@/lib/data";
+import {
+  getProductBySlug,
+  getProductVariants,
+  getRelatedProducts,
+} from "@/lib/data";
 import { getApprovedReviewsForProduct } from "@/lib/account-data";
 import {
   getProductGallery,
@@ -8,20 +11,15 @@ import {
   getProductCategory,
 } from "@/lib/product-utils";
 import { getStoreSettings } from "@/lib/store-settings";
-import { calculateDiscount } from "@/lib/utils";
 import { ProductBreadcrumbs } from "@/components/store/ProductBreadcrumbs";
-import { ProductGallery } from "@/components/store/ProductGallery";
-import { ProductRating } from "@/components/store/ProductRating";
-import { ProductActions } from "@/components/store/ProductActions";
+import { ProductDetailMain } from "@/components/store/ProductDetailMain";
 import { ProductReviewsSection } from "@/components/store/ProductReviewsSection";
 import { ProductDescription } from "@/components/store/ProductDescription";
 import { RelatedProductsSection } from "@/components/store/RelatedProductsSection";
-import { ProductPriceBlock } from "@/components/store/ProductPriceBlock";
-import { ProductDetailAccordion } from "@/components/store/ProductDetailAccordion";
 import { ProductDetailTabs } from "@/components/store/ProductDetailTabs";
 import { ProductTrustBox } from "@/components/store/ProductTrustBox";
-import { ProductShareRow } from "@/components/store/ProductShareRow";
 import { Check } from "lucide-react";
+import type { Category } from "@/types/database";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -33,19 +31,16 @@ export default async function ProductPage({ params }: Props) {
 
   if (!product) notFound();
 
-  const [reviews, relatedProducts, settings] = await Promise.all([
+  const [reviews, relatedProducts, settings, variants] = await Promise.all([
     getApprovedReviewsForProduct(product.id),
     getRelatedProducts(product, 8),
     getStoreSettings(),
+    getProductVariants(product.id),
   ]);
 
-  const category = getProductCategory(product);
+  const category = getProductCategory(product) as Category | null;
   const gallery = getProductGallery(product);
   const highlights = getProductHighlights(product);
-  const discountPercent = calculateDiscount(
-    product.price,
-    product.compare_at_price
-  );
 
   const descriptionPanel = (
     <div className="space-y-6">
@@ -91,57 +86,14 @@ export default async function ProductPage({ params }: Props) {
         categorySlug={category?.slug}
       />
 
-      <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 items-start">
-        <ProductGallery
-          images={gallery}
-          productName={product.name}
-          discountPercent={discountPercent}
-        />
-
-        <div className="lg:pt-1">
-          {category && (
-            <Link
-              href={`/shop?category=${category.slug}`}
-              className="inline-flex text-sm font-semibold text-primary bg-primary-light px-3.5 py-1.5 rounded-full hover:bg-primary/15 transition-colors mb-3"
-            >
-              {category.name}
-            </Link>
-          )}
-
-          <h1 className="text-[1.65rem] leading-snug sm:text-[1.75rem] lg:text-3xl font-bold text-slate-900 tracking-tight">
-            {product.name}
-          </h1>
-
-          <div className="mt-3">
-            <ProductRating product={product} />
-          </div>
-
-          <div className="mt-5">
-            <ProductPriceBlock product={product} />
-          </div>
-
-          {highlights.length > 0 && (
-            <ul className="mt-5 space-y-1.5 border-t border-slate-100 pt-5">
-              {highlights.slice(0, 3).map((item) => (
-                <li
-                  key={item}
-                  className="text-base sm:text-sm text-slate-600 pl-1 leading-relaxed"
-                >
-                  {item}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <div className="mt-6">
-            <ProductActions product={product} />
-          </div>
-
-          <ProductDetailAccordion settings={settings} />
-
-          <ProductShareRow sku={product.sku} productName={product.name} />
-        </div>
-      </div>
+      <ProductDetailMain
+        product={product}
+        variants={variants}
+        gallery={gallery}
+        category={category}
+        highlightPreview={highlights.slice(0, 3)}
+        settings={settings}
+      />
 
       <div className="mt-12 lg:mt-14 grid lg:grid-cols-[1fr_280px] gap-8 lg:gap-10 items-start">
         <ProductDetailTabs

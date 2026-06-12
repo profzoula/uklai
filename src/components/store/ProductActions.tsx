@@ -8,12 +8,32 @@ import { useCartStore } from "@/store/cart";
 
 type Props = {
   product: Product;
+  variantId?: string | null;
+  variantLabel?: string | null;
+  requireVariant?: boolean;
 };
 
-export function ProductActions({ product }: Props) {
+export function ProductActions({
+  product,
+  variantId,
+  variantLabel,
+  requireVariant = false,
+}: Props) {
   const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
   const [quantity, setQuantity] = useState(1);
+
+  if (requireVariant) {
+    return (
+      <button
+        type="button"
+        disabled
+        className="w-full py-4 bg-slate-200 text-slate-500 rounded-xl font-bold cursor-not-allowed uppercase tracking-wide text-sm"
+      >
+        Select an option
+      </button>
+    );
+  }
 
   if (product.stock <= 0) {
     return (
@@ -28,11 +48,11 @@ export function ProductActions({ product }: Props) {
   }
 
   function handleAddToCart() {
-    addItem(product, quantity);
+    addItem(product, quantity, { variantId, variantLabel });
   }
 
   function handleBuyNow() {
-    addItem(product, quantity);
+    addItem(product, quantity, { variantId, variantLabel });
     router.push("/cart");
   }
 
