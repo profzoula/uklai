@@ -41,6 +41,43 @@ function lineStock(item: CartItem): number {
   return Math.max(0, Number(item.product.stock));
 }
 
+function productFromSyncedLine(
+  line: SyncedCartLine,
+  existing?: Product
+): Product {
+  if (existing) {
+    return {
+      ...existing,
+      name: line.name,
+      slug: line.slug ?? existing.slug,
+      price: line.price,
+      image_url: line.image ?? existing.image_url,
+      stock: line.stock,
+    };
+  }
+
+  return {
+    id: line.productId,
+    name: line.name,
+    slug: line.slug ?? "",
+    description: null,
+    price: line.price,
+    compare_at_price: null,
+    image_url: line.image,
+    category_id: null,
+    stock: line.stock,
+    badge: null,
+    rating: 0,
+    review_count: 0,
+    featured: false,
+    active: true,
+    product_type: "physical",
+    catalog_type: line.variantId ? "variable" : "simple",
+    created_at: "",
+    updated_at: "",
+  };
+}
+
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
@@ -117,31 +154,20 @@ export const useCartStore = create<CartStore>()(
       },
 
       syncFromServer: (lines) => {
-        set({
+        set((state) => ({
           items: lines.map((line) => {
-            const baseProduct: Product = {
-              id: line.productId,
-              name: line.name,
-              slug: line.slug ?? "",
-              price: line.price,
-              compare_at_price: null,
-              image_url: line.image,
-              stock: line.stock,
-              active: true,
-              product_type: "physical",
-              catalog_type: line.variantId ? "variable" : "simple",
-              created_at: "",
-              updated_at: "",
-            };
+            const existing = state.items.find(
+              (item) => item.product.id === line.productId
+            )?.product;
 
             return {
-              product: baseProduct,
+              product: productFromSyncedLine(line, existing),
               quantity: line.quantity,
               variantId: line.variantId,
               variantLabel: line.variantLabel,
             };
           }),
-        });
+        }));
       },
 
       clearCart: () => set({ items: [] }),
