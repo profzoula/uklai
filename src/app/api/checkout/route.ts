@@ -10,6 +10,7 @@ import { calculateCheckoutTotals } from "@/lib/checkout-totals";
 import { isSupabaseServerLive } from "@/lib/supabase/config";
 import { resolveCheckoutPaymentMethod } from "@/lib/payment-methods";
 import { fulfillOrderItems, persistOrderItemRows } from "@/lib/fulfill-order";
+import { createPendingOrder } from "@/lib/order-persistence";
 import {
   getStripeCheckoutPaymentMethodTypes,
   stripeCheckoutCurrency,
@@ -131,28 +132,25 @@ export async function POST(request: Request) {
       }
 
       const email = customerEmail?.trim() || user?.email || null;
-      const { data: order, error: orderError } = await dataSupabase
-        .from("orders")
-        .insert({
-          user_id: user?.id ?? null,
-          status: "pending",
-          payment_method: "cod",
-          subtotal: totals.subtotal,
-          discount_amount: totals.discount,
-          tax_amount: totals.tax,
-          coupon_code: appliedCouponCode,
-          total: totals.total,
-          customer_email: email,
-        })
-        .select("id")
-        .single();
+      const created = await createPendingOrder(dataSupabase, {
+        userId: user?.id ?? null,
+        customerEmail: email,
+        paymentMethod: "cod",
+        subtotal: totals.subtotal,
+        discount: totals.discount,
+        tax: totals.tax,
+        total: totals.total,
+        couponCode: appliedCouponCode,
+      });
 
-      if (orderError || !order) {
+      if ("error" in created) {
         return NextResponse.json(
           { error: "Could not place cash on delivery order." },
           { status: 500 }
         );
       }
+
+      const order = { id: created.orderId };
 
       if (couponId) {
         const { data: coupon } = await dataSupabase
@@ -205,23 +203,19 @@ export async function POST(request: Request) {
     let orderId: string | undefined;
 
     if (isSupabaseServerLive() && dataSupabase) {
-      const { data: order, error: orderError } = await dataSupabase
-        .from("orders")
-        .insert({
-          user_id: user?.id ?? null,
-          status: "pending",
-          payment_method: "stripe",
-          subtotal: totals.subtotal,
-          discount_amount: totals.discount,
-          tax_amount: totals.tax,
-          coupon_code: appliedCouponCode,
-          total: totals.total,
-          customer_email: user?.email ?? null,
-        })
-        .select("id")
-        .single();
+      const created = await createPendingOrder(dataSupabase, {
+        userId: user?.id ?? null,
+        customerEmail: user?.email ?? null,
+        paymentMethod: "stripe",
+        subtotal: totals.subtotal,
+        discount: totals.discount,
+        tax: totals.tax,
+        total: totals.total,
+        couponCode: appliedCouponCode,
+      });
 
-      if (orderError || !order) {
+      if ("error" in created) {
+        console.error("Checkout order create failed:", created.error);
         return NextResponse.json(
           { error: "Could not create order before checkout." },
           { status: 500 }
@@ -230,19 +224,19 @@ export async function POST(request: Request) {
 
       const { error: itemsError } = await persistOrderItemRows(
         dataSupabase,
-        order.id,
+        created.orderId,
         items
       );
 
       if (itemsError) {
-        await dataSupabase.from("orders").delete().eq("id", order.id);
+        await dataSupabase.from("orders").delete().eq("id", created.orderId);
         return NextResponse.json(
           { error: "Could not save order items before checkout." },
           { status: 500 }
         );
       }
 
-      orderId = order.id;
+      orderId = created.orderId;
     }
 
     const session = await getStripe().checkout.sessions.create({
