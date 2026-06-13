@@ -4,6 +4,7 @@ import { validateCouponForCart } from "@/lib/coupons";
 import type { Coupon } from "@/lib/admin-data-types";
 import { getStoreSettings } from "@/lib/store-settings";
 import { calculateCheckoutTotals } from "@/lib/checkout-totals";
+import { enrichCheckoutLinesWithShippingFlags } from "@/lib/checkout-shipping-flags";
 
 export async function POST(request: Request) {
   const { code, items } = (await request.json()) as {
@@ -33,6 +34,16 @@ export async function POST(request: Request) {
   let freeShipping = false;
   let appliedCode: string | null = null;
 
+  const lineItems = items.map((item) => ({
+    productId: item.productId,
+    price: item.price,
+    quantity: item.quantity,
+  }));
+  const enrichedItems = await enrichCheckoutLinesWithShippingFlags(
+    supabase,
+    lineItems
+  );
+
   if (code?.trim()) {
     const { data: couponRow } = await supabase
       .from("coupons")
@@ -59,7 +70,12 @@ export async function POST(request: Request) {
     appliedCode = result.code;
   }
 
-  const totals = calculateCheckoutTotals(items, settings, discount, freeShipping);
+  const totals = calculateCheckoutTotals(
+    enrichedItems,
+    settings,
+    discount,
+    freeShipping
+  );
 
   return NextResponse.json({
     valid: true,

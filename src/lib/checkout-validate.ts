@@ -7,6 +7,8 @@ export type ValidatedCheckoutItem = {
   price: number;
   quantity: number;
   image: string | null;
+  freeShipping?: boolean;
+  noShippingRequired?: boolean;
 };
 
 type RawCheckoutItem = {
@@ -33,7 +35,7 @@ export async function validateCheckoutItems(
 
   const { data: products, error } = await supabase
     .from("products")
-    .select("id, name, price, compare_at_price, image_url, stock, active")
+    .select("id, name, price, compare_at_price, image_url, stock, active, free_shipping, no_shipping_required")
     .in("id", ids);
 
   if (error) {
@@ -122,6 +124,8 @@ export async function validateCheckoutItems(
       price,
       quantity: qty,
       image,
+      freeShipping: Boolean(product.free_shipping),
+      noShippingRequired: Boolean(product.no_shipping_required),
     });
   }
 

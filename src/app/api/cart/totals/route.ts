@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getDataSupabase } from "@/lib/supabase/server-data";
 import { getStoreSettings } from "@/lib/store-settings";
 import { calculateCheckoutTotals } from "@/lib/checkout-totals";
+import { enrichCheckoutLinesWithShippingFlags } from "@/lib/checkout-shipping-flags";
 
 export async function POST(request: Request) {
   const { items, discount, freeShipping } = (await request.json()) as {
@@ -14,10 +15,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Items required" }, { status: 400 });
   }
 
-  await createClient();
   const settings = await getStoreSettings();
+  const supabase = await getDataSupabase();
+  const lines = supabase
+    ? await enrichCheckoutLinesWithShippingFlags(supabase, items)
+    : items.map((item) => ({
+        ...item,
+        freeShipping: false,
+        noShippingRequired: false,
+      }));
+
   const totals = calculateCheckoutTotals(
-    items,
+    lines,
     settings,
     discount ?? 0,
     freeShipping ?? false

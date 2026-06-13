@@ -47,6 +47,7 @@ export type Product = {
   tax_class?: string | null;
   weight?: number | null;
   no_shipping_required?: boolean;
+  free_shipping?: boolean;
   color?: string | null;
   size?: string | null;
   created_at: string;

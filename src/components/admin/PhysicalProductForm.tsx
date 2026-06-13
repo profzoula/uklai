@@ -169,6 +169,7 @@ export function PhysicalProductForm({ product }: Props) {
       (product?.stock ?? 0) > 0 ? "in_stock" : "out_of_stock",
     quantity: product?.stock?.toString() ?? "0",
     no_shipping_required: product?.no_shipping_required ?? false,
+    free_shipping: product?.free_shipping ?? false,
     weight: product?.weight?.toString() ?? "",
     color: product?.color ?? "",
     size: product?.size ?? "",
@@ -246,6 +247,7 @@ export function PhysicalProductForm({ product }: Props) {
       meta_description: form.meta_description.trim() || null,
       weight: form.weight ? parseFloat(form.weight) : null,
       no_shipping_required: form.no_shipping_required,
+      free_shipping: form.no_shipping_required ? false : form.free_shipping,
       color: form.color || null,
       size: form.size || null,
       featured: form.featured,
@@ -286,6 +288,7 @@ export function PhysicalProductForm({ product }: Props) {
         tax_class,
         weight,
         no_shipping_required,
+        free_shipping,
         color,
         size,
         ...legacyPayload
@@ -873,13 +876,31 @@ export function PhysicalProductForm({ product }: Props) {
                     setForm({
                       ...form,
                       no_shipping_required: e.target.checked,
+                      free_shipping: e.target.checked ? false : form.free_shipping,
                     })
                   }
                 />
                 No shipping required?
               </label>
               {!form.no_shipping_required && (
-                <div>
+                <>
+                  <label className="mt-3 flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={form.free_shipping}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          free_shipping: e.target.checked,
+                        })
+                      }
+                    />
+                    Free shipping on this product
+                  </label>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Orders with only free-shipping products pay $0 delivery.
+                  </p>
+                  <div className="mt-4">
                   <RequiredLabel>Weight</RequiredLabel>
                   <div className="relative">
                     <input
@@ -896,7 +917,8 @@ export function PhysicalProductForm({ product }: Props) {
                       lb
                     </span>
                   </div>
-                </div>
+                  </div>
+                </>
               )}
             </Panel>
 

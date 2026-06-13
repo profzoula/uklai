@@ -4,6 +4,8 @@ export type CheckoutLine = {
   productId: string;
   price: number;
   quantity: number;
+  freeShipping?: boolean;
+  noShippingRequired?: boolean;
 };
 
 export type CheckoutTotals = {
@@ -14,6 +16,12 @@ export type CheckoutTotals = {
   total: number;
   freeShipping: boolean;
 };
+
+function cartQualifiesForProductFreeShipping(items: CheckoutLine[]): boolean {
+  const shippable = items.filter((item) => !item.noShippingRequired);
+  if (!shippable.length) return true;
+  return shippable.every((item) => item.freeShipping);
+}
 
 export function calculateCheckoutTotals(
   items: CheckoutLine[],
@@ -29,8 +37,9 @@ export function calculateCheckoutTotals(
 
   const threshold = parseFloat(settings.shipping.free_shipping_threshold || "50");
   const flatRate = parseFloat(settings.shipping.flat_rate || "5.99");
+  const productFreeShipping = cartQualifiesForProductFreeShipping(items);
   const shipping =
-    freeShipping || afterDiscount >= threshold ? 0 : flatRate;
+    freeShipping || productFreeShipping || afterDiscount >= threshold ? 0 : flatRate;
 
   let tax = 0;
   if (settings.tax.enabled) {
@@ -49,6 +58,6 @@ export function calculateCheckoutTotals(
     shipping,
     tax,
     total,
-    freeShipping: freeShipping || afterDiscount >= threshold,
+    freeShipping: freeShipping || productFreeShipping || afterDiscount >= threshold,
   };
 }

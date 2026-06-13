@@ -21,6 +21,8 @@ type CheckoutItem = {
   price: number;
   quantity: number;
   image: string | null;
+  freeShipping?: boolean;
+  noShippingRequired?: boolean;
 };
 
 export async function POST(request: Request) {
@@ -102,7 +104,13 @@ export async function POST(request: Request) {
     }
 
     const totals = calculateCheckoutTotals(
-      items,
+      items.map((item) => ({
+        productId: item.productId,
+        price: item.price,
+        quantity: item.quantity,
+        freeShipping: item.freeShipping,
+        noShippingRequired: item.noShippingRequired,
+      })),
       settings,
       discount,
       freeShipping
