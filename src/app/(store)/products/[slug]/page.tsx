@@ -17,7 +17,6 @@ import { ProductReviewsSection } from "@/components/store/ProductReviewsSection"
 import { ProductDescription } from "@/components/store/ProductDescription";
 import { RelatedProductsSection } from "@/components/store/RelatedProductsSection";
 import { ProductDetailTabs } from "@/components/store/ProductDetailTabs";
-import { ProductTrustBox } from "@/components/store/ProductTrustBox";
 import { Check } from "lucide-react";
 import type { Category } from "@/types/database";
 
@@ -93,18 +92,14 @@ export default async function ProductPage({ params }: Props) {
         category={category}
         highlightPreview={highlights.slice(0, 3)}
         settings={settings}
+        detailsSection={
+          <ProductDetailTabs
+            reviewCount={product.review_count}
+            descriptionPanel={descriptionPanel}
+            reviewsPanel={reviewsPanel}
+          />
+        }
       />
-
-      <div className="mt-12 lg:mt-14 grid lg:grid-cols-[1fr_280px] gap-8 lg:gap-10 items-start">
-        <ProductDetailTabs
-          reviewCount={product.review_count}
-          descriptionPanel={descriptionPanel}
-          reviewsPanel={reviewsPanel}
-        />
-        <ProductTrustBox
-          freeShippingThreshold={settings.shipping.free_shipping_threshold}
-        />
-      </div>
 
       <RelatedProductsSection
         products={relatedProducts}

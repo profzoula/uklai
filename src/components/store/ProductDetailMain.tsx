@@ -24,6 +24,7 @@ type Props = {
   category: Category | null;
   highlightPreview?: string[];
   settings: AllStoreSettings;
+  detailsSection?: React.ReactNode;
 };
 
 export function ProductDetailMain({
@@ -33,6 +34,7 @@ export function ProductDetailMain({
   category,
   highlightPreview = [],
   settings,
+  detailsSection,
 }: Props) {
   const availableVariants = useMemo(() => activeVariants(variants), [variants]);
   const isVariableProduct =
@@ -80,7 +82,7 @@ export function ProductDetailMain({
         preferredImage={selectedVariant?.image_url}
       />
 
-      <div className="lg:pt-1">
+      <div className="lg:row-span-2 lg:col-start-2 lg:row-start-1 lg:pt-1">
         {category && (
           <Link
             href={`/shop?category=${category.slug}`}
@@ -143,6 +145,12 @@ export function ProductDetailMain({
           productName={product.name}
         />
       </div>
+
+      {detailsSection && (
+        <div className="lg:col-start-1 lg:row-start-2 min-w-0">
+          {detailsSection}
+        </div>
+      )}
     </div>
   );
 }
