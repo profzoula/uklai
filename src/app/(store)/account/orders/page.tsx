@@ -1,106 +1,31 @@
-import Link from "next/link";
-import { Printer } from "lucide-react";
 import { getUser } from "@/lib/supabase/server";
 import { getUserOrders } from "@/lib/account-data";
-import { formatPrice, formatDate } from "@/lib/utils";
+import { getProducts } from "@/lib/data";
+import { AccountMainPanel } from "@/components/store/AccountMainPanel";
+import { AccountOrdersPanel } from "@/components/store/AccountOrdersPanel";
+import { MoreToLoveSection } from "@/components/store/MoreToLoveSection";
 
 export const dynamic = "force-dynamic";
 
-const statusColors: Record<string, string> = {
-  pending: "text-amber-600 bg-amber-50",
-  paid: "text-green-600 bg-green-50",
-  processing: "text-blue-600 bg-blue-50",
-  shipped: "text-purple-600 bg-purple-50",
-  delivered: "text-green-700 bg-green-50",
-  cancelled: "text-red-500 bg-red-50",
-  refunded: "text-orange-600 bg-orange-50",
+export const metadata = {
+  title: "Orders | My Account | UKLAI",
 };
 
 export default async function AccountOrdersPage() {
   const user = await getUser();
   if (!user) return null;
 
-  const orders = await getUserOrders(user.id);
+  const [orders, products] = await Promise.all([
+    getUserOrders(user.id),
+    getProducts({ featured: true, limit: 12 }),
+  ]);
 
   return (
-    <div>
-      <h2 className="text-lg font-bold text-slate-900 mb-4">Order history</h2>
-
-      {orders.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
-          <p className="text-slate-500 mb-4">You haven&apos;t placed any orders yet.</p>
-          <Link
-            href="/shop"
-            className="inline-flex bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-dark"
-          >
-            Start shopping
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {orders.map((order) => (
-            <article
-              key={order.id}
-              className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
-                <div>
-                  <p className="font-semibold text-slate-900">
-                    Order #{order.id.slice(0, 8).toUpperCase()}
-                  </p>
-                  <p className="text-sm text-slate-500">
-                    {formatDate(order.created_at)}
-                  </p>
-                </div>
-                <span
-                  className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${
-                    statusColors[order.status] ?? "bg-slate-100 text-slate-600"
-                  }`}
-                >
-                  {order.status}
-                </span>
-              </div>
-
-              <ul className="space-y-2 mb-4">
-                {(order.order_items ?? []).map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex justify-between text-sm text-slate-600"
-                  >
-                    <span>
-                      {item.product_name} × {item.quantity}
-                    </span>
-                    <span>{formatPrice(item.price * item.quantity)}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
-                <p className="font-bold text-slate-900">
-                  Total: {formatPrice(order.total)}
-                </p>
-                <div className="flex flex-wrap items-center gap-3">
-                  {order.tracking_number && (
-                    <p className="text-sm text-slate-600">
-                      Tracking ({order.tracking_carrier ?? "Carrier"}):{" "}
-                      <span className="font-medium">
-                        {order.tracking_number}
-                      </span>
-                    </p>
-                  )}
-                  <Link
-                    href={`/invoice/${order.id}`}
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
-                  >
-                    <Printer className="w-4 h-4" aria-hidden="true" />
-                    Print invoice
-                  </Link>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
-    </div>
+    <>
+      <AccountMainPanel>
+        <AccountOrdersPanel orders={orders} />
+      </AccountMainPanel>
+      <MoreToLoveSection products={products} />
+    </>
   );
 }
