@@ -52,7 +52,7 @@ function BlockGroup({
           block.type === "paragraph" ? (
             <p
               key={`p-${startIndex + i}`}
-              className="text-base sm:text-sm text-slate-600 leading-relaxed"
+              className="text-base sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line"
             >
               {block.text}
             </p>
@@ -122,7 +122,7 @@ export function ProductDescription({ description }: Props) {
 
   if (!hasStructuredContent && blocks.length === 1 && blocks[0].type === "paragraph") {
     return (
-      <p className="text-base sm:text-sm text-slate-600 leading-relaxed">{blocks[0].text}</p>
+      <p className="text-base sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line">{blocks[0].text}</p>
     );
   }
 
