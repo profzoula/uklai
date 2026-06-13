@@ -44,7 +44,7 @@ export function RelatedProductsSection({
         )}
       </div>
 
-      <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-5">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

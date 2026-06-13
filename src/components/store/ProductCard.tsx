@@ -50,12 +50,12 @@ export function ProductCard({ product }: Props) {
         </div>
       </Link>
 
-      <div className="p-3 sm:p-4 flex flex-col flex-1">
+      <div className="p-2.5 sm:p-4 flex flex-col flex-1">
         <Link
           href={`/products/${product.slug}`}
           className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
         >
-          <h3 className="text-base lg:text-lg font-semibold text-slate-900 group-hover:text-primary transition-colors line-clamp-2 min-h-[2.75rem]">
+          <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-slate-900 group-hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem] sm:min-h-[2.75rem]">
             {product.name}
           </h3>
         </Link>
@@ -65,18 +65,18 @@ export function ProductCard({ product }: Props) {
           aria-label={ratingLabel}
           title={ratingLabel}
         >
-          <Star className="w-4 h-4 sm:w-4 sm:h-4 fill-amber-400 text-amber-400" aria-hidden="true" />
-          <span className="text-base sm:text-sm font-medium text-slate-700" aria-hidden="true">
+          <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-amber-400 text-amber-400" aria-hidden="true" />
+          <span className="text-xs sm:text-sm font-medium text-slate-700" aria-hidden="true">
             {product.rating}
           </span>
-          <span className="text-base sm:text-sm text-slate-400" aria-hidden="true">
+          <span className="text-xs sm:text-sm text-slate-400" aria-hidden="true">
             ({product.review_count})
           </span>
         </div>
 
         <div className="flex items-center justify-between mt-auto pt-3 gap-2">
           <div className="flex flex-col min-w-0">
-            <span className="text-base lg:text-lg font-bold text-slate-900">
+            <span className="text-sm sm:text-base lg:text-lg font-bold text-slate-900">
               {formatPrice(prices.currentPrice)}
             </span>
             {prices.onSale && prices.regularPrice != null && (
@@ -90,7 +90,7 @@ export function ProductCard({ product }: Props) {
             type="button"
             onClick={() => addItem(product)}
             disabled={outOfStock}
-            className="min-w-[44px] min-h-[44px] p-2.5 bg-primary-light text-primary rounded-lg hover:bg-primary hover:text-white transition-colors shrink-0 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] p-2 sm:p-2.5 bg-primary-light text-primary rounded-lg hover:bg-primary hover:text-white transition-colors shrink-0 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             aria-label={
               outOfStock
                 ? `${product.name} is out of stock`
