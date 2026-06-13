@@ -7,7 +7,10 @@ type CheckoutItem = {
   image: string | null;
 };
 
-function stripeProductImageUrls(image: string | null): string[] {
+function stripeProductImageUrls(
+  image: string | null,
+  appOrigin: string
+): string[] {
   if (!image) return [];
 
   try {
@@ -16,8 +19,8 @@ function stripeProductImageUrls(image: string | null): string[] {
       return [image];
     }
   } catch {
-    if (image.startsWith("/") && process.env.NEXT_PUBLIC_APP_URL) {
-      const base = process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
+    if (image.startsWith("/") && appOrigin) {
+      const base = appOrigin.replace(/\/$/, "");
       return [`${base}${image}`];
     }
   }
@@ -60,7 +63,8 @@ export function buildStripeCheckoutLineItems(
   shipping: number,
   tax: number,
   taxLabel: string,
-  includeTaxLineItem: boolean
+  includeTaxLineItem: boolean,
+  appOrigin: string
 ): Stripe.Checkout.SessionCreateParams.LineItem[] {
   const subtotalCents = items.reduce(
     (sum, item) => sum + Math.round(item.price * 100) * item.quantity,
@@ -76,7 +80,7 @@ export function buildStripeCheckoutLineItems(
         currency,
         product_data: {
           name: item.name,
-          images: stripeProductImageUrls(item.image),
+          images: stripeProductImageUrls(item.image, appOrigin),
         },
         unit_amount: discountedUnitAmountCents(
           item,

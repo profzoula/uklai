@@ -15,6 +15,7 @@ import {
   stripeCheckoutCurrency,
 } from "@/lib/stripe-bnpl";
 import { buildStripeCheckoutLineItems } from "@/lib/checkout-stripe-line-items";
+import { resolveRequestOrigin } from "@/lib/app-url";
 import Stripe from "stripe";
 
 type CheckoutItem = {
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
       customerEmail?: string;
     };
     const { items: rawItems, couponCode, paymentMethod, customerEmail } = body;
+    const appOrigin = resolveRequestOrigin(request);
 
     if (!rawItems?.length) {
       return NextResponse.json({ error: "No items" }, { status: 400 });
@@ -168,7 +170,7 @@ export async function POST(request: Request) {
       await fulfillOrderItems(dataSupabase, order.id, items);
 
       return NextResponse.json({
-        url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?order_id=${order.id}&method=cod`,
+        url: `${appOrigin}/checkout/success?order_id=${order.id}&method=cod`,
       });
     }
 
@@ -194,14 +196,15 @@ export async function POST(request: Request) {
       totals.shipping,
       totals.tax,
       `Sales tax (${settings.tax.default_rate}%)`,
-      !useStripeTax
+      !useStripeTax,
+      appOrigin
     );
 
     const session = await getStripe().checkout.sessions.create({
       mode: "payment",
       line_items: lineItems,
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/cart`,
+      success_url: `${appOrigin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appOrigin}/cart`,
       customer_email: user?.email ?? undefined,
       shipping_address_collection: { allowed_countries: ["US"] },
       payment_method_types: paymentMethodTypes,

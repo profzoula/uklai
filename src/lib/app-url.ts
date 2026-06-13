@@ -31,6 +31,18 @@ export function getPublicAppOrigin(): string {
 }
 
 export function resolveRequestOrigin(request: Request): string {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto");
+
+  if (forwardedHost) {
+    const host = forwardedHost.split(",")[0]?.trim();
+    const proto = forwardedProto?.split(",")[0]?.trim() || "https";
+    if (host) {
+      const normalized = normalizeOrigin(`${proto}://${host}`);
+      if (normalized) return normalized;
+    }
+  }
+
   const requestOrigin = new URL(request.url).origin;
   const normalized = normalizeOrigin(requestOrigin);
   if (normalized) return normalized;
