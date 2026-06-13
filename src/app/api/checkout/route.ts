@@ -9,7 +9,7 @@ import { getStoreSettings } from "@/lib/store-settings";
 import { calculateCheckoutTotals } from "@/lib/checkout-totals";
 import { isSupabaseServerLive } from "@/lib/supabase/config";
 import { resolveCheckoutPaymentMethod } from "@/lib/payment-methods";
-import { fulfillOrderItems } from "@/lib/fulfill-order";
+import { fulfillOrderItems, persistOrderItemRows } from "@/lib/fulfill-order";
 import {
   getStripeCheckoutPaymentMethodTypes,
   stripeCheckoutCurrency,
@@ -202,6 +202,49 @@ export async function POST(request: Request) {
       appOrigin
     );
 
+    let orderId: string | undefined;
+
+    if (isSupabaseServerLive() && dataSupabase) {
+      const { data: order, error: orderError } = await dataSupabase
+        .from("orders")
+        .insert({
+          user_id: user?.id ?? null,
+          status: "pending",
+          payment_method: "stripe",
+          subtotal: totals.subtotal,
+          discount_amount: totals.discount,
+          tax_amount: totals.tax,
+          coupon_code: appliedCouponCode,
+          total: totals.total,
+          customer_email: user?.email ?? null,
+        })
+        .select("id")
+        .single();
+
+      if (orderError || !order) {
+        return NextResponse.json(
+          { error: "Could not create order before checkout." },
+          { status: 500 }
+        );
+      }
+
+      const { error: itemsError } = await persistOrderItemRows(
+        dataSupabase,
+        order.id,
+        items
+      );
+
+      if (itemsError) {
+        await dataSupabase.from("orders").delete().eq("id", order.id);
+        return NextResponse.json(
+          { error: "Could not save order items before checkout." },
+          { status: 500 }
+        );
+      }
+
+      orderId = order.id;
+    }
+
     const session = await getStripe().checkout.sessions.create({
       mode: "payment",
       line_items: lineItems,
@@ -213,39 +256,27 @@ export async function POST(request: Request) {
       ...(useStripeTax ? { automatic_tax: { enabled: true } } : {}),
       metadata: {
         user_id: user?.id ?? "",
+        order_id: orderId ?? "",
         coupon_code: appliedCouponCode ?? "",
         coupon_id: couponId ?? "",
         subtotal: totals.subtotal.toFixed(2),
         discount: totals.discount.toFixed(2),
         shipping: totals.shipping.toFixed(2),
         tax: totals.tax.toFixed(2),
-        items: JSON.stringify(
-          items.map((i) => ({
-            productId: i.productId,
-            name: i.name,
-            price: i.price,
-            quantity: i.quantity,
-            image: i.image,
-          }))
-        ),
       },
     });
 
-    if (isSupabaseServerLive() && dataSupabase) {
-      await dataSupabase.from("orders").insert({
-        user_id: user?.id ?? null,
-        stripe_session_id: session.id,
-        status: "pending",
-        payment_method: "stripe",
-        subtotal: totals.subtotal,
-        discount_amount: totals.discount,
-        tax_amount: totals.tax,
-        coupon_code: appliedCouponCode,
-        total: useStripeTax && session.amount_total
-          ? session.amount_total / 100
-          : totals.total,
-        customer_email: user?.email ?? null,
-      });
+    if (isSupabaseServerLive() && dataSupabase && orderId) {
+      await dataSupabase
+        .from("orders")
+        .update({
+          stripe_session_id: session.id,
+          total:
+            useStripeTax && session.amount_total
+              ? session.amount_total / 100
+              : totals.total,
+        })
+        .eq("id", orderId);
     }
 
     return NextResponse.json({ url: session.url });
