@@ -1,10 +1,14 @@
+import { Fragment } from "react";
 import {
   parseProductDescription,
   type ProductDescriptionBlock,
 } from "@/lib/format-product-description";
+import { PromoBanner } from "@/components/store/PromoBanner";
+import type { HomepagePromoSettings } from "@/lib/store-settings-types";
 
 type Props = {
   description: string | null | undefined;
+  promo?: HomepagePromoSettings;
 };
 
 function SpecRow({
@@ -109,7 +113,7 @@ function groupConsecutiveBlocks(blocks: ProductDescriptionBlock[]) {
   return groups;
 }
 
-export function ProductDescription({ description }: Props) {
+export function ProductDescription({ description, promo }: Props) {
   const { blocks, hasStructuredContent } = parseProductDescription(description);
 
   if (!blocks.length) {
@@ -127,15 +131,32 @@ export function ProductDescription({ description }: Props) {
   }
 
   const groups = groupConsecutiveBlocks(blocks);
+  const lastFeatureGroupIndex = groups.reduce(
+    (last, group, index) => (group.type === "feature" ? index : last),
+    -1
+  );
 
   return (
     <div className="space-y-4">
-      {groups.map((group) => (
-        <BlockGroup
-          key={`${group.type}-${group.startIndex}`}
-          blocks={group.blocks}
-          startIndex={group.startIndex}
-        />
+      {groups.map((group, index) => (
+        <Fragment key={`${group.type}-${group.startIndex}`}>
+          <BlockGroup
+            blocks={group.blocks}
+            startIndex={group.startIndex}
+          />
+          {group.type === "feature" && index === lastFeatureGroupIndex && (
+            <div className="pt-2">
+              <PromoBanner
+                embedded
+                href={promo?.href}
+                headline={promo?.headline}
+                highlight={promo?.highlight}
+                subtext={promo?.subtext}
+                buttonLabel={promo?.buttonLabel}
+              />
+            </div>
+          )}
+        </Fragment>
       ))}
     </div>
   );

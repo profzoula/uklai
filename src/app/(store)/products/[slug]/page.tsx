@@ -43,7 +43,10 @@ export default async function ProductPage({ params }: Props) {
 
   const descriptionPanel = (
     <div className="space-y-6">
-      <ProductDescription description={product.description} />
+      <ProductDescription
+        description={product.description}
+        promo={settings.homepage?.promo}
+      />
       {highlights.length > 0 && (
         <div>
           <h3 className="text-base font-bold text-slate-900 mb-3">

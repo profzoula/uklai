@@ -6,6 +6,7 @@ type Props = {
   highlight?: string;
   subtext?: string;
   buttonLabel?: string;
+  embedded?: boolean;
 };
 
 function MemberCardVisual() {
@@ -36,37 +37,60 @@ export function PromoBanner({
   highlight = "10% off",
   subtext = "your first order when you join UKLAI Member Picks — exclusive deals, early access & free shipping alerts.",
   buttonLabel = "Learn more",
+  embedded = false,
 }: Props) {
-  return (
-    <section className="py-6 sm:py-8 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#0046be] rounded-xl overflow-hidden shadow-sm">
-          <div className="flex flex-col md:flex-row md:items-center gap-6 sm:gap-8 px-5 sm:px-8 lg:px-10 py-6 sm:py-8 lg:py-9">
-            <MemberCardVisual />
+  const inner = (
+    <div className="bg-[#0046be] rounded-xl overflow-hidden shadow-sm">
+      <div
+        className={
+          embedded
+            ? "flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 px-4 sm:px-5 py-5"
+            : "flex flex-col md:flex-row md:items-center gap-6 sm:gap-8 px-5 sm:px-8 lg:px-10 py-6 sm:py-8 lg:py-9"
+        }
+      >
+        <MemberCardVisual />
 
-            <div className="flex-1 min-w-0 text-center md:text-left">
-              <p className="text-white text-lg sm:text-xl font-bold leading-snug">
-                {headline}
-              </p>
-              <p className="text-[#fff200] text-4xl sm:text-5xl lg:text-[3.25rem] font-extrabold leading-none mt-1">
-                {highlight}
-              </p>
-              <p className="mt-3 text-sm sm:text-[15px] text-white/90 leading-relaxed max-w-xl mx-auto md:mx-0">
-                {subtext}
-              </p>
-            </div>
+        <div className="flex-1 min-w-0 text-center sm:text-left">
+          <p
+            className={
+              embedded
+                ? "text-white text-base sm:text-lg font-bold leading-snug"
+                : "text-white text-lg sm:text-xl font-bold leading-snug"
+            }
+          >
+            {headline}
+          </p>
+          <p
+            className={
+              embedded
+                ? "text-[#fff200] text-3xl sm:text-4xl font-extrabold leading-none mt-1"
+                : "text-[#fff200] text-4xl sm:text-5xl lg:text-[3.25rem] font-extrabold leading-none mt-1"
+            }
+          >
+            {highlight}
+          </p>
+          <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-white/90 leading-relaxed max-w-xl mx-auto sm:mx-0">
+            {subtext}
+          </p>
+        </div>
 
-            <div className="shrink-0 flex justify-center md:justify-end">
-              <Link
-                href={href}
-                className="inline-flex items-center justify-center bg-white text-[#0046be] font-bold text-sm sm:text-base px-8 py-3 rounded-md hover:bg-slate-100 transition-colors whitespace-nowrap"
-              >
-                {buttonLabel}
-              </Link>
-            </div>
-          </div>
+        <div className="shrink-0 flex justify-center sm:justify-end">
+          <Link
+            href={href}
+            className="inline-flex items-center justify-center bg-white text-[#0046be] font-bold text-sm px-6 sm:px-8 py-2.5 sm:py-3 rounded-md hover:bg-slate-100 transition-colors whitespace-nowrap"
+          >
+            {buttonLabel}
+          </Link>
         </div>
       </div>
+    </div>
+  );
+
+  if (embedded) return inner;
+
+  return (
+    <section className="py-6 sm:py-8 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">{inner}</div>
     </section>
   );
 }
