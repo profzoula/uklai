@@ -591,6 +591,18 @@ export function SettingsForm({
                 <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
                   <input
                     type="checkbox"
+                    checked={settings.notifications.review_requests ?? true}
+                    onChange={(e) =>
+                      updateNotifications({
+                        review_requests: e.target.checked,
+                      })
+                    }
+                  />
+                  Ask customers for a product review after delivery
+                </label>
+                <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                  <input
+                    type="checkbox"
                     checked={settings.notifications.sms_updates}
                     onChange={(e) =>
                       updateNotifications({ sms_updates: e.target.checked })

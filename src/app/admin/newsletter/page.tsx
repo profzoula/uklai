@@ -1,5 +1,6 @@
 import { getNewsletterSubscribers } from "@/lib/admin-data";
 import { formatDate } from "@/lib/utils";
+import { AdminEmailForm } from "@/components/admin/AdminEmailForm";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,15 @@ export default async function AdminNewsletterPage() {
             Export CSV
           </a>
         )}
+      </div>
+
+      <div className="mb-8">
+        <AdminEmailForm
+          audience="newsletter"
+          subscriberCount={subscribers.length}
+          title="Send newsletter email"
+          description="Broadcast a promotional or update email to everyone on your newsletter list."
+        />
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">

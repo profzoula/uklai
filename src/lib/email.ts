@@ -1,4 +1,6 @@
 import { getStoreSettings } from "@/lib/store-settings";
+import { getPublicAppOrigin } from "@/lib/app-url";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 type SendEmailParams = {
   to: string;
@@ -132,7 +134,85 @@ export async function sendAdminNewOrderEmail(order: {
       <p>New order received.</p>
       <p>Customer: ${order.customer_email ?? "Guest"}</p>
       <p>Total: $${Number(order.total).toFixed(2)}</p>
-      <p>View in admin: ${process.env.NEXT_PUBLIC_APP_URL}/admin/orders/${order.id}</p>
+      <p>View in admin: ${getPublicAppOrigin()}/admin/orders/${order.id}</p>
     `,
   });
+}
+
+type ReviewRequestItem = {
+  product_name: string;
+  slug: string;
+};
+
+export async function sendReviewRequestEmail(
+  supabase: SupabaseClient,
+  orderId: string
+) {
+  const settings = await getStoreSettings();
+  if (!settings.notifications.review_requests) return;
+
+  const { data: order } = await supabase
+    .from("orders")
+    .select(
+      "id, customer_email, review_request_sent_at, order_items(product_id, product_name, product_type, products(slug))"
+    )
+    .eq("id", orderId)
+    .single();
+
+  if (!order?.customer_email || order.review_request_sent_at) return;
+
+  const seen = new Set<string>();
+  const reviewItems: ReviewRequestItem[] = [];
+
+  for (const item of order.order_items ?? []) {
+    if (item.product_type === "digital") continue;
+
+    const slug = (item.products as { slug?: string } | null)?.slug;
+    if (!slug || seen.has(slug)) continue;
+
+    seen.add(slug);
+    reviewItems.push({
+      product_name: item.product_name,
+      slug,
+    });
+  }
+
+  if (!reviewItems.length) return;
+
+  const storeName = settings.store.name || "UKLAI";
+  const appOrigin = getPublicAppOrigin();
+  const orderRef = order.id.slice(0, 8).toUpperCase();
+
+  const itemsHtml = reviewItems
+    .map(
+      (item) =>
+        `<li style="margin-bottom:12px;">
+          <strong>${item.product_name}</strong><br />
+          <a href="${appOrigin}/products/${item.slug}?tab=reviews" style="color:#2563eb;font-weight:600;">
+            Leave a review
+          </a>
+        </li>`
+    )
+    .join("");
+
+  const result = await sendEmail({
+    to: order.customer_email,
+    subject: `How was your order? — ${storeName}`,
+    html: `
+      <h2>We hope you're enjoying your purchase!</h2>
+      <p>Your order <strong>#${orderRef}</strong> has been delivered. We'd love to hear what you think.</p>
+      <p>Your feedback helps other shoppers and helps us improve ${storeName}.</p>
+      <ul style="padding-left:20px;line-height:1.6;">${itemsHtml}</ul>
+      <p style="margin-top:24px;color:#64748b;font-size:14px;">
+        Thank you for shopping with ${storeName}.
+      </p>
+    `,
+  });
+
+  if (result.ok) {
+    await supabase
+      .from("orders")
+      .update({ review_request_sent_at: new Date().toISOString() })
+      .eq("id", orderId);
+  }
 }

@@ -118,6 +118,7 @@ export type Order = {
   admin_notes: string | null;
   tax_amount: number | null;
   payment_method?: string | null;
+  review_request_sent_at?: string | null;
   created_at: string;
   updated_at: string;
   order_items?: OrderItem[];

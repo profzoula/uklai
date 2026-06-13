@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { adminUnavailable, getAdminSupabase } from "@/lib/admin-api";
 import type { OrderStatus } from "@/types/database";
-import { sendShippedEmail } from "@/lib/email";
+import { sendShippedEmail, sendReviewRequestEmail } from "@/lib/email";
 
 const validStatuses: OrderStatus[] = [
   "pending",
@@ -46,7 +46,7 @@ export async function PATCH(request: Request, { params }: Props) {
 
   const { data: before } = await supabase
     .from("orders")
-    .select("status, customer_email")
+    .select("status, customer_email, review_request_sent_at")
     .eq("id", id)
     .single();
 
@@ -67,6 +67,15 @@ export async function PATCH(request: Request, { params }: Props) {
       tracking_number: body.tracking_number,
       tracking_carrier: body.tracking_carrier,
     });
+  }
+
+  if (
+    body.status === "delivered" &&
+    before?.status !== "delivered" &&
+    before?.customer_email &&
+    !before.review_request_sent_at
+  ) {
+    await sendReviewRequestEmail(supabase, id);
   }
 
   return NextResponse.json({ success: true });

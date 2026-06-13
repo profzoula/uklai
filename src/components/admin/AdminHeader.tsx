@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Search, Settings, Bell } from "lucide-react";
+import { Search, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { AdminNotifications } from "@/components/admin/AdminNotifications";
 
 export function AdminHeader() {
   const router = useRouter();
@@ -47,14 +48,7 @@ export function AdminHeader() {
             <Settings className="w-5 h-5" strokeWidth={1.75} />
           </Link>
 
-          <button
-            type="button"
-            className="relative p-2.5 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors"
-            aria-label="Notifications"
-          >
-            <Bell className="w-5 h-5" strokeWidth={1.75} />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
-          </button>
+          <AdminNotifications />
 
           <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-slate-200">
             <div className="w-9 h-9 rounded-full bg-[#0046be] text-white flex items-center justify-center text-sm font-bold">

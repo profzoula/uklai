@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -15,6 +15,13 @@ export function ProductDetailTabs({
   reviewsPanel,
 }: Props) {
   const [tab, setTab] = useState<"description" | "reviews">("description");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tab") === "reviews") {
+      setTab("reviews");
+    }
+  }, []);
 
   return (
     <div>

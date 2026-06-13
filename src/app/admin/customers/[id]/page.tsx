@@ -3,6 +3,7 @@ import { getCustomerById } from "@/lib/admin-data";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { AdminEmailForm } from "@/components/admin/AdminEmailForm";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,13 @@ export default async function AdminCustomerDetailPage({ params }: Props) {
           </p>
         </div>
       </div>
+
+      <AdminEmailForm
+        to={customer.email}
+        toLabel={customer.full_name}
+        title="Email customer"
+        description="Send a personal message from UKLAI using your configured email provider."
+      />
 
       <section className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100">

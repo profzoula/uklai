@@ -37,6 +37,7 @@ export type NotificationSettings = {
   order_confirmation: boolean;
   admin_new_order: boolean;
   shipping_updates: boolean;
+  review_requests: boolean;
   sms_updates: boolean;
   admin_email: string;
 };
@@ -97,6 +98,7 @@ export const defaultStoreSettings: AllStoreSettings = {
     order_confirmation: true,
     admin_new_order: true,
     shipping_updates: true,
+    review_requests: true,
     sms_updates: false,
     admin_email: "support@uklai.com",
   },
