@@ -87,18 +87,20 @@ export default async function ShopPage({ searchParams }: Props) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
       <div className="grid lg:grid-cols-[260px_minmax(0,1fr)] gap-8 items-start">
-        <ShopSidebar
-          categories={categories}
-          customCollections={customCollections}
-          searchQuery={searchQuery}
-          activeCategory={params.category}
-          collectionSlug={collectionSlug}
-          isDeals={isDeals}
-          isFeatured={isFeatured}
-          filters={shopFilters}
-        />
+        <div className="relative z-30 min-w-0">
+          <ShopSidebar
+            categories={categories}
+            customCollections={customCollections}
+            searchQuery={searchQuery}
+            activeCategory={params.category}
+            collectionSlug={collectionSlug}
+            isDeals={isDeals}
+            isFeatured={isFeatured}
+            filters={shopFilters}
+          />
+        </div>
 
-        <div className="min-w-0">
+        <div className="relative z-0 min-w-0">
           <div className="mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
               {pageTitle}

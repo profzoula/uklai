@@ -61,7 +61,7 @@ export function ShopSidebar({
     buildShopFilterHref(filters, overrides);
 
   return (
-    <aside className="space-y-4 lg:sticky lg:top-24 lg:pr-1">
+    <aside className="relative space-y-4 lg:sticky lg:top-24 lg:pr-1 overflow-visible">
       <ShopSearchBar defaultQuery={searchQuery ?? ""} />
 
       {categories.length > 0 && (

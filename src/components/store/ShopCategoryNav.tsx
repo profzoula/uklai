@@ -44,7 +44,7 @@ export function ShopCategoryNav({
 
   return (
     <div
-      className="relative"
+      className="relative overflow-visible"
       onMouseLeave={() => setHoveredId(null)}
     >
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -112,7 +112,7 @@ export function ShopCategoryNav({
 
       {hoveredCategory && (
         <div
-          className="hidden lg:block absolute left-full top-0 z-40 ml-1 w-[280px] rounded-xl border border-slate-200 bg-white shadow-lg p-4"
+          className="hidden lg:block absolute left-full top-0 z-50 ml-1 w-[280px] rounded-xl border border-slate-200 bg-white shadow-xl p-4"
           onMouseEnter={() => setHoveredId(hoveredCategory.id)}
         >
           <p className="text-base font-bold text-slate-900">
