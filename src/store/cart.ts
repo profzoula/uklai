@@ -10,6 +10,18 @@ type AddItemOptions = {
   variantLabel?: string | null;
 };
 
+type SyncedCartLine = {
+  productId: string;
+  variantId: string | null;
+  variantLabel: string | null;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string | null;
+  stock: number;
+  slug?: string;
+};
+
 type CartStore = {
   items: CartItem[];
   addItem: (
@@ -19,10 +31,15 @@ type CartStore = {
   ) => void;
   removeItem: (lineKey: string) => void;
   updateQuantity: (lineKey: string, quantity: number) => void;
+  syncFromServer: (lines: SyncedCartLine[]) => void;
   clearCart: () => void;
   getTotal: () => number;
   getItemCount: () => number;
 };
+
+function lineStock(item: CartItem): number {
+  return Math.max(0, Number(item.product.stock));
+}
 
 export const useCartStore = create<CartStore>()(
   persist(
@@ -93,10 +110,38 @@ export const useCartStore = create<CartStore>()(
             }
             return {
               ...item,
-              quantity: Math.min(quantity, item.product.stock),
+              quantity: Math.min(quantity, lineStock(item)),
             };
           }),
         }));
+      },
+
+      syncFromServer: (lines) => {
+        set({
+          items: lines.map((line) => {
+            const baseProduct: Product = {
+              id: line.productId,
+              name: line.name,
+              slug: line.slug ?? "",
+              price: line.price,
+              compare_at_price: null,
+              image_url: line.image,
+              stock: line.stock,
+              active: true,
+              product_type: "physical",
+              catalog_type: line.variantId ? "variable" : "simple",
+              created_at: "",
+              updated_at: "",
+            };
+
+            return {
+              product: baseProduct,
+              quantity: line.quantity,
+              variantId: line.variantId,
+              variantLabel: line.variantLabel,
+            };
+          }),
+        });
       },
 
       clearCart: () => set({ items: [] }),
@@ -113,3 +158,5 @@ export const useCartStore = create<CartStore>()(
     { name: "uklai-cart" }
   )
 );
+
+export type { SyncedCartLine };

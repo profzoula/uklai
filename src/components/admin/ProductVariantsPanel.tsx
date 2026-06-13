@@ -11,6 +11,7 @@ import {
 
 export type VariantDraft = {
   key: string;
+  id?: string;
   sku: string;
   color: string;
   image_url: string;
@@ -65,6 +66,7 @@ export function ProductVariantsPanel({
         return;
       }
       const rows = (data.variants ?? []) as Array<{
+        id: string;
         sku: string | null;
         color: string | null;
         image_url: string | null;
@@ -77,7 +79,8 @@ export function ProductVariantsPanel({
           ? rows.map((row) => {
               const prices = dbPricesToFormFields(row.price, row.compare_at_price);
               return {
-                key: crypto.randomUUID(),
+                key: row.id,
+                id: row.id,
                 sku: row.sku ?? "",
                 color: row.color ?? "",
                 image_url: row.image_url ?? "",
@@ -162,6 +165,7 @@ export function ProductVariantsPanel({
           row.sale_price
         );
         return {
+          id: row.id,
           sku: row.sku.trim() || null,
           color: row.color.trim() || null,
           image_url: row.image_url.trim() || null,

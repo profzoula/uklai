@@ -9,6 +9,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 type Props = { params: Promise<{ id: string }> };
 
 type VariantInput = {
+  id?: string;
   sku?: string | null;
   color?: string | null;
   image_url?: string | null;
@@ -40,6 +41,7 @@ function parseVariantInput(raw: unknown, index: number): VariantInput | string {
     return `Variant ${index + 1}: invalid compare price.`;
   }
   return {
+    id: row.id ? String(row.id).trim() || undefined : undefined,
     sku: row.sku ? String(row.sku).trim() || null : null,
     color: row.color ? String(row.color).trim() || null : null,
     image_url: row.image_url ? String(row.image_url).trim() || null : null,
@@ -121,13 +123,13 @@ export async function PUT(request: Request, { params }: Props) {
     return NextResponse.json({ error: "Product not found." }, { status: 404 });
   }
 
-  const { error: deleteError } = await supabase
+  const { data: existingRows, error: existingError } = await supabase
     .from("product_variants")
-    .delete()
+    .select("id")
     .eq("product_id", id);
 
-  if (deleteError) {
-    if (/relation.*product_variants/i.test(deleteError.message)) {
+  if (existingError) {
+    if (/relation.*product_variants/i.test(existingError.message)) {
       return NextResponse.json(
         {
           error:
@@ -136,38 +138,89 @@ export async function PUT(request: Request, { params }: Props) {
         { status: 503 }
       );
     }
-    return NextResponse.json({ error: deleteError.message }, { status: 500 });
+    return NextResponse.json({ error: existingError.message }, { status: 500 });
   }
 
   if (!parsed.length) {
+    if (existingRows?.length) {
+      const { error: clearError } = await supabase
+        .from("product_variants")
+        .delete()
+        .eq("product_id", id);
+      if (clearError) {
+        return NextResponse.json({ error: clearError.message }, { status: 500 });
+      }
+    }
     await syncParentProductFromVariants(supabase, id);
     return NextResponse.json({ variants: [] });
   }
 
   const now = new Date().toISOString();
-  const rows = parsed.map((v, index) => ({
-    product_id: id,
-    sku: v.sku,
-    color: v.color,
-    image_url: v.image_url,
-    price: v.price,
-    compare_at_price: v.compare_at_price,
-    stock: v.stock ?? 0,
-    sort_order: v.sort_order ?? index,
-    active: v.active !== false,
-    updated_at: now,
-  }));
+  const existingIds = new Set((existingRows ?? []).map((row) => row.id));
+  const keptIds = new Set<string>();
+  const savedVariants: unknown[] = [];
 
-  const { data, error: insertError } = await supabase
-    .from("product_variants")
-    .insert(rows)
-    .select("*");
+  for (const [index, variant] of parsed.entries()) {
+    const row = {
+      product_id: id,
+      sku: variant.sku,
+      color: variant.color,
+      image_url: variant.image_url,
+      price: variant.price,
+      compare_at_price: variant.compare_at_price,
+      stock: variant.stock ?? 0,
+      sort_order: variant.sort_order ?? index,
+      active: variant.active !== false,
+      updated_at: now,
+    };
 
-  if (insertError) {
-    return NextResponse.json({ error: insertError.message }, { status: 500 });
+    if (variant.id && existingIds.has(variant.id)) {
+      const { data, error: updateError } = await supabase
+        .from("product_variants")
+        .update(row)
+        .eq("id", variant.id)
+        .eq("product_id", id)
+        .select("*")
+        .single();
+
+      if (updateError) {
+        return NextResponse.json({ error: updateError.message }, { status: 500 });
+      }
+
+      keptIds.add(variant.id);
+      if (data) savedVariants.push(data);
+      continue;
+    }
+
+    const { data, error: insertError } = await supabase
+      .from("product_variants")
+      .insert(row)
+      .select("*")
+      .single();
+
+    if (insertError) {
+      return NextResponse.json({ error: insertError.message }, { status: 500 });
+    }
+
+    if (data) {
+      keptIds.add(data.id);
+      savedVariants.push(data);
+    }
+  }
+
+  const removeIds = [...existingIds].filter((variantId) => !keptIds.has(variantId));
+  if (removeIds.length) {
+    const { error: removeError } = await supabase
+      .from("product_variants")
+      .delete()
+      .in("id", removeIds);
+
+    if (removeError) {
+      return NextResponse.json({ error: removeError.message }, { status: 500 });
+    }
   }
 
   await syncParentProductFromVariants(supabase, id);
 
-  return NextResponse.json({ variants: data ?? [] });
+  return NextResponse.json({ variants: savedVariants });
 }

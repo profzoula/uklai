@@ -5,11 +5,13 @@ import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag, Tag } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { cartLineKey } from "@/lib/product-variant-utils";
 import { formatPrice } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function CartPage() {
-  const { items, updateQuantity, removeItem, getTotal } = useCartStore();
+  const { items, updateQuantity, removeItem, getTotal, syncFromServer } =
+    useCartStore();
   const [loading, setLoading] = useState(false);
+  const [refreshingCart, setRefreshingCart] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
@@ -28,6 +30,7 @@ export default function CartPage() {
   const cartItems = items.map((item) => ({
     productId: item.product.id,
     variantId: item.variantId ?? null,
+    variantLabel: item.variantLabel ?? null,
     name: item.variantLabel
       ? `${item.product.name} (${item.variantLabel})`
       : item.product.name,
@@ -37,6 +40,34 @@ export default function CartPage() {
   }));
 
   const subtotal = getTotal();
+  const didSyncCart = useRef(false);
+
+  useEffect(() => {
+    if (!items.length || didSyncCart.current) return;
+    didSyncCart.current = true;
+
+    setRefreshingCart(true);
+    fetch("/api/cart/validate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        items: items.map((item) => ({
+          productId: item.product.id,
+          variantId: item.variantId ?? null,
+          variantLabel: item.variantLabel ?? null,
+          quantity: item.quantity,
+        })),
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.items)) {
+          syncFromServer(data.items);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setRefreshingCart(false));
+  }, [items.length, items, syncFromServer]);
 
   useEffect(() => {
     fetch("/api/store/payment-methods")
@@ -176,6 +207,11 @@ export default function CartPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pb-28 lg:pb-12">
       <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-6 sm:mb-8">
         Shopping Cart ({items.length})
+        {refreshingCart ? (
+          <span className="ml-2 text-sm font-normal text-slate-400">
+            Updating…
+          </span>
+        ) : null}
       </h1>
 
       <div className="grid lg:grid-cols-3 gap-8">
