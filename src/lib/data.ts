@@ -11,6 +11,7 @@ import {
   useMockDataFallback,
 } from "@/lib/supabase/config";
 import { getDataSupabase } from "@/lib/supabase/server-data";
+import { enrichProductsWithVariantAggregates } from "@/lib/product-variant-sync";
 import "server-only";
 
 export { isSupabaseConfigured, isSupabaseServerLive };
@@ -320,7 +321,7 @@ export async function getProducts(options?: {
       (p) => p.compare_at_price != null && p.compare_at_price > p.price
     );
   }
-  return products;
+  return enrichProductsWithVariantAggregates(supabase, products);
 }
 
 export type StoreCollection = {
@@ -452,7 +453,7 @@ async function getAutoCollectionProducts(
       : [];
   }
 
-  return data as Product[];
+  return enrichProductsWithVariantAggregates(supabase, data as Product[]);
 }
 
 export async function getStoreCollections(): Promise<StoreCollection[]> {
@@ -526,10 +527,11 @@ export async function getProductsByCollectionSlug(
         .eq("active", true);
 
       if (products?.length) {
-        return orderByCollectionLinks(products as Product[], links).slice(
+        const ordered = orderByCollectionLinks(products as Product[], links).slice(
           0,
           limit
         );
+        return enrichProductsWithVariantAggregates(supabase, ordered);
       }
 
       return [];
@@ -574,7 +576,11 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     const category = mockCategories.find((c) => c.id === product.category_id);
     return category ? { ...product, categories: category } : product;
   }
-  return data;
+
+  const [product] = await enrichProductsWithVariantAggregates(supabase, [
+    data as Product,
+  ]);
+  return product;
 }
 
 export async function getProductVariants(
@@ -730,7 +736,8 @@ export async function getAllProductsAdmin(): Promise<Product[]> {
     .select("*, categories(*)")
     .order("created_at", { ascending: false });
 
-  return (data ?? []) as Product[];
+  const products = (data ?? []) as Product[];
+  return enrichProductsWithVariantAggregates(supabase, products);
 }
 
 export async function getProductByIdAdmin(id: string): Promise<Product | null> {

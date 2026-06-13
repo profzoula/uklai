@@ -3,6 +3,7 @@ import {
   adminUnavailable,
   getAuthorizedAdminSupabase,
 } from "@/lib/admin-api";
+import { syncParentProductFromVariants } from "@/lib/product-variant-sync";
 import { createServiceClient } from "@/lib/supabase/service";
 
 type Props = { params: Promise<{ id: string }> };
@@ -139,6 +140,7 @@ export async function PUT(request: Request, { params }: Props) {
   }
 
   if (!parsed.length) {
+    await syncParentProductFromVariants(supabase, id);
     return NextResponse.json({ variants: [] });
   }
 
@@ -164,6 +166,8 @@ export async function PUT(request: Request, { params }: Props) {
   if (insertError) {
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }
+
+  await syncParentProductFromVariants(supabase, id);
 
   return NextResponse.json({ variants: data ?? [] });
 }
