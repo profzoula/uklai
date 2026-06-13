@@ -11,6 +11,7 @@ import { getDisplayPrices } from "@/lib/product-pricing";
 import { ProductGallery } from "@/components/store/ProductGallery";
 import { ProductRating } from "@/components/store/ProductRating";
 import { ProductPriceBlock } from "@/components/store/ProductPriceBlock";
+import { ProductDeliverySummary } from "@/components/store/ProductDeliverySummary";
 import { ProductVariantSelector } from "@/components/store/ProductVariantSelector";
 import { ProductActions } from "@/components/store/ProductActions";
 import { ProductDetailAccordion } from "@/components/store/ProductDetailAccordion";
@@ -112,6 +113,10 @@ export function ProductDetailMain({
 
         <div className="mt-5">
           <ProductPriceBlock product={displayProduct} />
+          <ProductDeliverySummary
+            product={displayProduct}
+            settings={settings}
+          />
         </div>
 
         {isVariableProduct && availableVariants.length > 0 && (

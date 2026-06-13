@@ -59,35 +59,15 @@ export function ProductDetailAccordion({ settings }: Props) {
       title: "Shipping information",
       icon: Truck,
       content: (
-        <div className="space-y-4">
-          <div className="flex gap-3 rounded-lg bg-emerald-50/80 border border-emerald-100 px-3.5 py-3">
-            <Truck
-              className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5"
-              aria-hidden="true"
-            />
-            <div>
-              <p className="text-sm font-bold text-slate-900">Free shipping</p>
-              <p className="text-sm text-slate-600 mt-0.5">
-                Delivery:{" "}
-                <span className="font-semibold text-slate-900">
-                  {delivery.label}
-                </span>{" "}
-                <span className="text-slate-500">
-                  ({delivery.minDays}–{delivery.maxDays} days)
-                </span>
-              </p>
-            </div>
-          </div>
-          <ul className="space-y-1.5 text-base sm:text-sm text-slate-600">
-            <li>
-              Estimated delivery: {delivery.minDays}–{delivery.maxDays} days
-              (US)
-            </li>
-            {shipping.international_shipping && (
-              <li>International shipping available</li>
-            )}
-          </ul>
-        </div>
+        <ul className="space-y-1.5 text-base sm:text-sm text-slate-600">
+          <li>
+            Estimated delivery: {delivery.minDays}–{delivery.maxDays} days
+            (US)
+          </li>
+          {shipping.international_shipping && (
+            <li>International shipping available</li>
+          )}
+        </ul>
       ),
     },
     {
