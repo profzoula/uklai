@@ -5,6 +5,7 @@ import { BestSellersSection } from "@/components/store/BestSellersSection";
 import { NewArrivalsSection } from "@/components/store/NewArrivalsSection";
 import { PromoBanner } from "@/components/store/PromoBanner";
 import { FeaturedProducts } from "@/components/store/FeaturedProducts";
+import { EbooksSection } from "@/components/store/EbooksSection";
 import { Newsletter } from "@/components/store/Newsletter";
 import {
   getCategories,
@@ -23,10 +24,12 @@ export default async function HomePage() {
     bestSellers,
     newArrivals,
     dealOfDay,
+    ebooks,
     featuredMeta,
     bestMeta,
     newMeta,
     dealMeta,
+    ebookMeta,
     settings,
   ] = await Promise.all([
     getCategories(),
@@ -34,10 +37,12 @@ export default async function HomePage() {
     getProductsByCollectionSlug("best-sellers", 12),
     getProductsByCollectionSlug("new-arrivals", 12),
     getProductsByCollectionSlug("deal-of-the-day", 12),
+    getProductsByCollectionSlug("ebook", 12),
     getCollectionBySlug("featured"),
     getCollectionBySlug("best-sellers"),
     getCollectionBySlug("new-arrivals"),
     getCollectionBySlug("deal-of-the-day"),
+    getCollectionBySlug("ebook"),
     getStoreSettings(),
   ]);
 
@@ -70,6 +75,11 @@ export default async function HomePage() {
         products={newArrivals}
         title={newMeta?.name ?? "New Arrivals"}
         description={newMeta?.description}
+      />
+      <EbooksSection
+        products={ebooks}
+        title={ebookMeta?.name ?? "Ebooks"}
+        description={ebookMeta?.description}
       />
       <PromoBanner
         headline={promo?.headline}

@@ -5,8 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ChevronLeft,
-  ChevronUp,
-  ChevronDown,
+  GripVertical,
   Plus,
   Trash2,
   Search,
@@ -82,6 +81,7 @@ export function CollectionForm({ collection, initialProducts = [] }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [productSearch, setProductSearch] = useState("");
   const [listSearch, setListSearch] = useState("");
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/products")
@@ -129,20 +129,33 @@ export function CollectionForm({ collection, initialProducts = [] }: Props) {
     setAssignedProducts((prev) => [...prev, product]);
   }
 
-  function removeProduct(id: string) {
-    setAssignedProducts((prev) => prev.filter((p) => p.id !== id));
-  }
-
-  function moveProduct(id: string, direction: "up" | "down") {
+  function reorderProducts(fromIndex: number, toIndex: number) {
+    if (fromIndex === toIndex) return;
     setAssignedProducts((prev) => {
-      const index = prev.findIndex((p) => p.id === id);
-      if (index === -1) return prev;
-      const target = direction === "up" ? index - 1 : index + 1;
-      if (target < 0 || target >= prev.length) return prev;
       const next = [...prev];
-      [next[index], next[target]] = [next[target], next[index]];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
       return next;
     });
+  }
+
+  function handleRowDragStart(index: number) {
+    setDragIndex(index);
+  }
+
+  function handleRowDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    if (dragIndex === null || dragIndex === index) return;
+    reorderProducts(dragIndex, index);
+    setDragIndex(index);
+  }
+
+  function handleRowDragEnd() {
+    setDragIndex(null);
+  }
+
+  function removeProduct(id: string) {
+    setAssignedProducts((prev) => prev.filter((p) => p.id !== id));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -253,6 +266,10 @@ export function CollectionForm({ collection, initialProducts = [] }: Props) {
                 <span className="font-medium text-slate-700">
                   deal-of-the-day
                 </span>
+                ,{" "}
+                <span className="font-medium text-slate-700">
+                  ebook
+                </span>
                 . Products must be <strong>Active</strong> and you must click{" "}
                 <strong>Save</strong> after adding them.
               </p>
@@ -287,7 +304,7 @@ export function CollectionForm({ collection, initialProducts = [] }: Props) {
 
         <Panel
           title="Products"
-          subtitle="Drag order with arrows — first products show first on the homepage for this collection."
+          subtitle="Drag and drop products to reorder — first products show first on the homepage for this collection."
           action={
             <button
               type="button"
@@ -345,36 +362,30 @@ export function CollectionForm({ collection, initialProducts = [] }: Props) {
                     return (
                     <tr
                       key={product.id}
-                      className="border-t border-slate-100 hover:bg-slate-50"
+                      onDragOver={(e) => handleRowDragOver(e, index)}
+                      className={`border-t border-slate-100 hover:bg-slate-50 ${
+                        dragIndex === index ? "bg-primary/5 opacity-80" : ""
+                      }`}
                     >
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
+                          {canReorder ? (
+                            <button
+                              type="button"
+                              draggable
+                              onDragStart={() => handleRowDragStart(index)}
+                              onDragEnd={handleRowDragEnd}
+                              className="p-0.5 text-slate-400 hover:text-primary cursor-grab active:cursor-grabbing touch-none"
+                              aria-label={`Drag to reorder ${product.name}`}
+                            >
+                              <GripVertical className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <span className="w-5" aria-hidden="true" />
+                          )}
                           <span className="text-xs font-semibold text-slate-400 w-5 text-center">
                             {index + 1}
                           </span>
-                          <div className="flex flex-col">
-                            <button
-                              type="button"
-                              disabled={!canReorder || index === 0}
-                              onClick={() => moveProduct(product.id, "up")}
-                              className="p-0.5 text-slate-400 hover:text-primary disabled:opacity-30"
-                              aria-label="Move up"
-                            >
-                              <ChevronUp className="w-4 h-4" />
-                            </button>
-                            <button
-                              type="button"
-                              disabled={
-                                !canReorder ||
-                                index === assignedProducts.length - 1
-                              }
-                              onClick={() => moveProduct(product.id, "down")}
-                              className="p-0.5 text-slate-400 hover:text-primary disabled:opacity-30"
-                              aria-label="Move down"
-                            >
-                              <ChevronDown className="w-4 h-4" />
-                            </button>
-                          </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -422,7 +433,9 @@ export function CollectionForm({ collection, initialProducts = [] }: Props) {
             {assignedProducts.length} item
             {assignedProducts.length !== 1 ? "s" : ""} assigned · position 1
             appears first on the storefront
-            {listSearch.trim() ? " · clear search to reorder" : ""}
+            {listSearch.trim()
+              ? " · clear search to drag and reorder"
+              : " · drag rows to reorder"}
           </p>
         </Panel>
 

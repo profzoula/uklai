@@ -363,6 +363,12 @@ function mockProductsForCollection(slug: string, limit: number): Product[] {
       .slice(0, limit);
   }
 
+  if (slug === "ebook") {
+    return [...active]
+      .filter((p) => p.product_type === "digital")
+      .slice(0, limit);
+  }
+
   return active.slice(0, limit);
 }
 
@@ -394,6 +400,12 @@ export async function getCollectionBySlug(
       slug: "featured",
       description: "Curated products on the homepage Featured section",
     },
+    ebook: {
+      id: "ebook",
+      name: "Ebooks",
+      slug: "ebook",
+      description: "Digital books and guides — instant download after purchase.",
+    },
   };
 
   const supabase = await getDataSupabase();
@@ -417,6 +429,7 @@ const HOMEPAGE_COLLECTION_SLUGS = new Set([
   "best-sellers",
   "new-arrivals",
   "deal-of-the-day",
+  "ebook",
 ]);
 
 async function getAutoCollectionProducts(
@@ -440,6 +453,10 @@ async function getAutoCollectionProducts(
       .order("price", { ascending: true });
   } else if (collectionSlug === "featured") {
     query = query.eq("featured", true).order("created_at", { ascending: false });
+  } else if (collectionSlug === "ebook") {
+    query = query
+      .eq("product_type", "digital")
+      .order("created_at", { ascending: false });
   } else {
     return useMockFallback()
       ? mockProductsForCollection(collectionSlug, limit)
@@ -482,6 +499,12 @@ export async function getStoreCollections(): Promise<StoreCollection[]> {
         id: "deal-of-the-day",
         name: "Deal of the Day",
         slug: "deal-of-the-day",
+        description: null,
+      },
+      {
+        id: "ebook",
+        name: "Ebooks",
+        slug: "ebook",
         description: null,
       },
     ];
