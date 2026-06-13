@@ -23,6 +23,7 @@ export async function POST(request: Request) {
         ...item,
         freeShipping: false,
         noShippingRequired: false,
+        weight: null,
       }));
 
   const totals = calculateCheckoutTotals(

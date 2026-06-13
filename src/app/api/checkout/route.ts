@@ -26,6 +26,7 @@ type CheckoutItem = {
   image: string | null;
   freeShipping?: boolean;
   noShippingRequired?: boolean;
+  weight?: number | null;
 };
 
 export async function POST(request: Request) {
@@ -114,6 +115,7 @@ export async function POST(request: Request) {
         quantity: item.quantity,
         freeShipping: item.freeShipping,
         noShippingRequired: item.noShippingRequired,
+        weight: item.weight,
       })),
       settings,
       discount,

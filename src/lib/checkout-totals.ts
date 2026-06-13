@@ -6,6 +6,7 @@ export type CheckoutLine = {
   quantity: number;
   freeShipping?: boolean;
   noShippingRequired?: boolean;
+  weight?: number | null;
 };
 
 export type CheckoutTotals = {
@@ -23,6 +24,25 @@ function cartQualifiesForProductFreeShipping(items: CheckoutLine[]): boolean {
   return shippable.every((item) => item.freeShipping);
 }
 
+/** Weighted physical items without free shipping always incur the flat rate. */
+function cartQualifiesForThresholdFreeShipping(
+  items: CheckoutLine[],
+  afterDiscount: number,
+  threshold: number
+): boolean {
+  if (afterDiscount < threshold) return false;
+
+  const hasWeightedPaidShippingItem = items.some(
+    (item) =>
+      !item.noShippingRequired &&
+      !item.freeShipping &&
+      item.weight != null &&
+      item.weight > 0
+  );
+
+  return !hasWeightedPaidShippingItem;
+}
+
 export function calculateCheckoutTotals(
   items: CheckoutLine[],
   settings: AllStoreSettings,
@@ -38,8 +58,13 @@ export function calculateCheckoutTotals(
   const threshold = parseFloat(settings.shipping.free_shipping_threshold || "50");
   const flatRate = parseFloat(settings.shipping.flat_rate || "5.99");
   const productFreeShipping = cartQualifiesForProductFreeShipping(items);
+  const thresholdFreeShipping = cartQualifiesForThresholdFreeShipping(
+    items,
+    afterDiscount,
+    threshold
+  );
   const shipping =
-    freeShipping || productFreeShipping || afterDiscount >= threshold ? 0 : flatRate;
+    freeShipping || productFreeShipping || thresholdFreeShipping ? 0 : flatRate;
 
   let tax = 0;
   if (settings.tax.enabled) {
@@ -58,6 +83,7 @@ export function calculateCheckoutTotals(
     shipping,
     tax,
     total,
-    freeShipping: freeShipping || productFreeShipping || afterDiscount >= threshold,
+    freeShipping:
+      freeShipping || productFreeShipping || thresholdFreeShipping,
   };
 }
