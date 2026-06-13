@@ -35,6 +35,9 @@ export function ProductDetailMain({
   settings,
 }: Props) {
   const availableVariants = useMemo(() => activeVariants(variants), [variants]);
+  const isVariableProduct =
+    product.catalog_type === "variable" ||
+    (product.catalog_type !== "simple" && availableVariants.length > 0);
   const [selectedVariantId, setSelectedVariantId] = useState(
     () => availableVariants[0]?.id ?? ""
   );
@@ -46,10 +49,10 @@ export function ProductDetailMain({
 
   const displayProduct = useMemo(
     () =>
-      selectedVariant
+      isVariableProduct && selectedVariant
         ? productWithVariant(product, selectedVariant)
         : product,
-    [product, selectedVariant]
+    [product, selectedVariant, isVariableProduct]
   );
 
   const displayGallery = useMemo(() => {
@@ -99,7 +102,7 @@ export function ProductDetailMain({
           <ProductPriceBlock product={displayProduct} />
         </div>
 
-        {availableVariants.length > 1 && (
+        {isVariableProduct && availableVariants.length > 0 && (
           <ProductVariantSelector
             variants={availableVariants}
             selectedId={selectedVariant?.id ?? ""}
@@ -126,7 +129,9 @@ export function ProductDetailMain({
             variantId={selectedVariant?.id}
             variantLabel={selectedVariant?.color}
             requireVariant={
-              availableVariants.length > 1 && !selectedVariant
+              isVariableProduct &&
+              availableVariants.length > 0 &&
+              !selectedVariant
             }
           />
         </div>

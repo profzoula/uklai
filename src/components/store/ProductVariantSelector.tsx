@@ -17,7 +17,7 @@ export function ProductVariantSelector({
 }: Props) {
   const selected = variants.find((v) => v.id === selectedId) ?? variants[0];
 
-  if (variants.length <= 1) return null;
+  if (variants.length === 0) return null;
 
   const label = selected?.color?.trim() || "Option";
 

@@ -19,6 +19,7 @@ export type Category = {
 };
 
 export type ProductType = "physical" | "digital";
+export type CatalogType = "simple" | "variable";
 
 export type Product = {
   id: string;
@@ -36,6 +37,7 @@ export type Product = {
   featured: boolean;
   active: boolean;
   product_type?: ProductType;
+  catalog_type?: CatalogType;
   digital_file_url?: string | null;
   sku?: string | null;
   highlights?: string[] | null;

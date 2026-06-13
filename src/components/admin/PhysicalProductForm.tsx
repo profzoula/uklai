@@ -26,7 +26,7 @@ import {
   validateFormPrices,
 } from "@/lib/product-pricing";
 import type { Attribute } from "@/lib/admin-data-types";
-import type { Category, Product } from "@/types/database";
+import type { CatalogType, Category, Product } from "@/types/database";
 import { ProductMediaGallery } from "@/components/admin/ProductMediaGallery";
 import { ProductVariantsPanel } from "@/components/admin/ProductVariantsPanel";
 
@@ -118,6 +118,16 @@ function autoSku(name: string) {
   return base ? `NB-${base}` : `NB-${Date.now().toString(36).toUpperCase()}`;
 }
 
+function resolveCatalogType(
+  product: Product | undefined,
+  variantCount: number
+): CatalogType {
+  if (product?.catalog_type === "variable" || product?.catalog_type === "simple") {
+    return product.catalog_type;
+  }
+  return variantCount > 0 ? "variable" : "simple";
+}
+
 export function PhysicalProductForm({ product }: Props) {
   const router = useRouter();
   const isEdit = !!product;
@@ -163,7 +173,10 @@ export function PhysicalProductForm({ product }: Props) {
     color: product?.color ?? "",
     size: product?.size ?? "",
     featured: product?.featured ?? false,
+    catalog_type: resolveCatalogType(product, 0),
   });
+
+  const isVariable = form.catalog_type === "variable";
 
   useEffect(() => {
     Promise.all([
@@ -175,7 +188,20 @@ export function PhysicalProductForm({ product }: Props) {
         setAttributes(attrs);
       })
       .catch(() => {});
-  }, []);
+
+    if (isEdit && product?.id) {
+      fetch(`/api/admin/products/${product.id}/variants`)
+        .then((r) => r.json())
+        .then((data) => {
+          const count = Array.isArray(data.variants) ? data.variants.length : 0;
+          setForm((prev) => ({
+            ...prev,
+            catalog_type: resolveCatalogType(product, count),
+          }));
+        })
+        .catch(() => {});
+    }
+  }, [isEdit, product]);
 
   const colorAttr = attributes.find((a) => a.slug === "color");
   const sizeAttr = attributes.find((a) => a.slug === "size");
@@ -197,11 +223,12 @@ export function PhysicalProductForm({ product }: Props) {
     let stock = parseInt(form.quantity) || 0;
     if (form.manage_stock === "no") stock = 9999;
     if (form.stock_availability === "out_of_stock") stock = 0;
+    if (form.catalog_type === "variable") stock = 0;
 
-    const { price, compare_at_price } = formFieldsToDbPrices(
-      form.regular_price,
-      form.sale_price
-    );
+    const { price, compare_at_price } =
+      form.catalog_type === "variable"
+        ? { price: parseFloat(form.regular_price) || 0, compare_at_price: null }
+        : formFieldsToDbPrices(form.regular_price, form.sale_price);
 
     return {
       name: form.name.trim(),
@@ -224,6 +251,7 @@ export function PhysicalProductForm({ product }: Props) {
       featured: form.featured,
       active,
       product_type: "physical" as const,
+      catalog_type: form.catalog_type,
       digital_file_url: null,
       rating: product?.rating ?? 4.5,
       review_count: product?.review_count ?? 0,
@@ -236,14 +264,14 @@ export function PhysicalProductForm({ product }: Props) {
   async function persistProduct(
     payload: ReturnType<typeof buildPayload>,
     mode: "insert" | "update"
-  ) {
+  ): Promise<{ error: { message: string } | null; id?: string }> {
     const supabase = createClient();
     const query =
       mode === "update"
         ? supabase.from("products").update(payload).eq("id", product!.id)
-        : supabase.from("products").insert(payload);
+        : supabase.from("products").insert(payload).select("id").single();
 
-    let { error: saveError } = await query;
+    let { data, error: saveError } = await query;
 
     if (saveError && /column/i.test(saveError.message)) {
       const {
@@ -251,6 +279,7 @@ export function PhysicalProductForm({ product }: Props) {
         gallery_urls,
         sku,
         product_type,
+        catalog_type,
         digital_file_url,
         meta_title,
         meta_description,
@@ -264,11 +293,14 @@ export function PhysicalProductForm({ product }: Props) {
       const fallback =
         mode === "update"
           ? supabase.from("products").update(legacyPayload).eq("id", product!.id)
-          : supabase.from("products").insert(legacyPayload);
-      ({ error: saveError } = await fallback);
+          : supabase.from("products").insert(legacyPayload).select("id").single();
+      ({ data, error: saveError } = await fallback);
     }
 
-    return saveError;
+    return {
+      error: saveError,
+      id: mode === "update" ? product!.id : (data as { id: string } | null)?.id,
+    };
   }
 
   const salePriceError = validateFormPrices(
@@ -281,25 +313,32 @@ export function PhysicalProductForm({ product }: Props) {
     setLoading(true);
     setError(null);
 
-    const priceError = validateFormPrices(
+    const saveError = validateFormPrices(
       form.regular_price,
       form.sale_price
     );
-    if (priceError) {
-      setError(priceError);
+    if (!isVariable && saveError) {
+      setError(saveError);
       setLoading(false);
       return;
     }
 
-    const saveError = await persistProduct(
+    const { error: persistError, id: savedId } = await persistProduct(
       buildPayload(),
       isEdit ? "update" : "insert"
     );
-    if (saveError) {
-      setError(saveError.message);
+    if (persistError) {
+      setError(persistError.message);
       setLoading(false);
       return;
     }
+
+    if (!isEdit && form.catalog_type === "variable" && savedId) {
+      router.push(`/admin/products/${savedId}`);
+      router.refresh();
+      return;
+    }
+
     router.push("/admin/products");
     router.refresh();
   }
@@ -387,6 +426,31 @@ export function PhysicalProductForm({ product }: Props) {
         </div>
       )}
 
+      <div className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">
+        <span className="text-sm font-bold text-slate-900">Product data</span>
+        <span className="text-slate-400" aria-hidden="true">
+          —
+        </span>
+        <select
+          value={form.catalog_type}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              catalog_type: e.target.value as CatalogType,
+            })
+          }
+          className="min-w-[11rem] px-3 py-1.5 border border-primary/30 rounded-md text-sm font-medium text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+        >
+          <option value="simple">Simple product</option>
+          <option value="variable">Variable product</option>
+        </select>
+        <p className="text-xs text-slate-500 w-full sm:w-auto sm:ml-auto">
+          {isVariable
+            ? "Set price, color, photo, and stock on each variant."
+            : "One price and stock level for the whole product."}
+        </p>
+      </div>
+
       <form id="physical-product-form" onSubmit={handleSubmit}>
         <div className="grid lg:grid-cols-3 gap-5 items-start">
           {/* Main column */}
@@ -420,53 +484,68 @@ export function PhysicalProductForm({ product }: Props) {
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <RequiredLabel>Regular price</RequiredLabel>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      required
-                      value={form.regular_price}
-                      onChange={(e) =>
-                        setForm({ ...form, regular_price: e.target.value })
-                      }
-                      className={`${inputClass} pr-12`}
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-                      USD
-                    </span>
+                {isVariable ? (
+                  <div className="sm:col-span-2 rounded-lg bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-600">
+                    Pricing is managed in the{" "}
+                    <span className="font-medium text-slate-800">
+                      Product variants
+                    </span>{" "}
+                    section — each color or option can have its own regular and
+                    sale price.
                   </div>
-                </div>
-                <div>
-                  <label className={`${labelClass} mb-1.5 block`}>
-                    Special price (sale)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={form.sale_price}
-                      onChange={(e) =>
-                        setForm({ ...form, sale_price: e.target.value })
-                      }
-                      aria-invalid={!!salePriceError}
-                      className={`${inputClass} pr-12 ${
-                        salePriceError
-                          ? "border-red-300 focus:border-red-400 focus:ring-red-200"
-                          : ""
-                      }`}
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-                      USD
-                    </span>
-                  </div>
-                  {salePriceError && (
-                    <p className="mt-1.5 text-xs text-red-600">{salePriceError}</p>
-                  )}
-                </div>
+                ) : (
+                  <>
+                    <div>
+                      <RequiredLabel>Regular price</RequiredLabel>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          required
+                          value={form.regular_price}
+                          onChange={(e) =>
+                            setForm({ ...form, regular_price: e.target.value })
+                          }
+                          className={`${inputClass} pr-12`}
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                          USD
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className={`${labelClass} mb-1.5 block`}>
+                        Special price (sale)
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={form.sale_price}
+                          onChange={(e) =>
+                            setForm({ ...form, sale_price: e.target.value })
+                          }
+                          aria-invalid={!!salePriceError}
+                          className={`${inputClass} pr-12 ${
+                            salePriceError
+                              ? "border-red-300 focus:border-red-400 focus:ring-red-200"
+                              : ""
+                          }`}
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                          USD
+                        </span>
+                      </div>
+                      {salePriceError && (
+                        <p className="mt-1.5 text-xs text-red-600">
+                          {salePriceError}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
 
               <div>
@@ -570,24 +649,25 @@ export function PhysicalProductForm({ product }: Props) {
               />
             </Panel>
 
-            {isEdit && product?.id ? (
-              <ProductVariantsPanel
-                productId={product.id}
-                colorOptions={colorAttr?.values ?? []}
-                defaultPrice={form.regular_price}
-              />
-            ) : (
-              <Panel
-                title="Product variants"
-                subtitle="SKU, color, photo, price, and stock per variant."
-              >
-                <p className="text-sm text-slate-500">
-                  Save the product first, then return to this page to add color
-                  variants (e.g. White, Black) with their own SKU, image, price,
-                  and stock.
-                </p>
-              </Panel>
-            )}
+            {isVariable &&
+              (isEdit && product?.id ? (
+                <ProductVariantsPanel
+                  productId={product.id}
+                  colorOptions={colorAttr?.values ?? []}
+                  defaultPrice={form.regular_price}
+                />
+              ) : (
+                <Panel
+                  title="Product variants"
+                  subtitle="SKU, color, photo, price, and stock per variant."
+                >
+                  <p className="text-sm text-slate-500">
+                    Save the product first — you&apos;ll return to this page to
+                    add color variants (e.g. White, Black) with their own SKU,
+                    image, price, and stock.
+                  </p>
+                </Panel>
+              ))}
 
             <Panel title="SEO">
               <div>
@@ -691,83 +771,95 @@ export function PhysicalProductForm({ product }: Props) {
             </Panel>
 
             <Panel title="Inventory">
-              <div>
-                <label className={`${labelClass} mb-2 block`}>
-                  Manage stock
-                </label>
-                <div className="flex flex-col gap-2">
-                  <RadioRow
-                    name="manage_stock"
-                    value="yes"
-                    checked={form.manage_stock === "yes"}
-                    onChange={(v) =>
-                      setForm({
-                        ...form,
-                        manage_stock: v as "yes" | "no",
-                      })
-                    }
-                    label="Yes"
-                  />
-                  <RadioRow
-                    name="manage_stock"
-                    value="no"
-                    checked={form.manage_stock === "no"}
-                    onChange={(v) =>
-                      setForm({
-                        ...form,
-                        manage_stock: v as "yes" | "no",
-                      })
-                    }
-                    label="No"
-                  />
-                </div>
-              </div>
-              {form.manage_stock === "yes" && (
+              {isVariable ? (
+                <p className="text-sm text-slate-500">
+                  Stock is managed per variant in the Product variants section.
+                </p>
+              ) : (
                 <>
                   <div>
                     <label className={`${labelClass} mb-2 block`}>
-                      Stock availability
+                      Manage stock
                     </label>
                     <div className="flex flex-col gap-2">
                       <RadioRow
-                        name="stock_availability"
-                        value="in_stock"
-                        checked={form.stock_availability === "in_stock"}
+                        name="manage_stock"
+                        value="yes"
+                        checked={form.manage_stock === "yes"}
                         onChange={(v) =>
                           setForm({
                             ...form,
-                            stock_availability: v as "in_stock" | "out_of_stock",
+                            manage_stock: v as "yes" | "no",
                           })
                         }
-                        label="In stock"
+                        label="Yes"
                       />
                       <RadioRow
-                        name="stock_availability"
-                        value="out_of_stock"
-                        checked={form.stock_availability === "out_of_stock"}
+                        name="manage_stock"
+                        value="no"
+                        checked={form.manage_stock === "no"}
                         onChange={(v) =>
                           setForm({
                             ...form,
-                            stock_availability: v as "in_stock" | "out_of_stock",
+                            manage_stock: v as "yes" | "no",
                           })
                         }
-                        label="Out of stock"
+                        label="No"
                       />
                     </div>
                   </div>
-                  <div>
-                    <RequiredLabel>Quantity</RequiredLabel>
-                    <input
-                      type="number"
-                      min="0"
-                      required
-                      value={form.quantity}
-                      onChange={(e) =>
-                        setForm({ ...form, quantity: e.target.value })
-                      }
-                      className={inputClass}
-                    />
-                  </div>
+                  {form.manage_stock === "yes" && (
+                    <>
+                      <div>
+                        <label className={`${labelClass} mb-2 block`}>
+                          Stock availability
+                        </label>
+                        <div className="flex flex-col gap-2">
+                          <RadioRow
+                            name="stock_availability"
+                            value="in_stock"
+                            checked={form.stock_availability === "in_stock"}
+                            onChange={(v) =>
+                              setForm({
+                                ...form,
+                                stock_availability: v as
+                                  | "in_stock"
+                                  | "out_of_stock",
+                              })
+                            }
+                            label="In stock"
+                          />
+                          <RadioRow
+                            name="stock_availability"
+                            value="out_of_stock"
+                            checked={form.stock_availability === "out_of_stock"}
+                            onChange={(v) =>
+                              setForm({
+                                ...form,
+                                stock_availability: v as
+                                  | "in_stock"
+                                  | "out_of_stock",
+                              })
+                            }
+                            label="Out of stock"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <RequiredLabel>Quantity</RequiredLabel>
+                        <input
+                          type="number"
+                          min="0"
+                          required
+                          value={form.quantity}
+                          onChange={(e) =>
+                            setForm({ ...form, quantity: e.target.value })
+                          }
+                          className={inputClass}
+                        />
+                      </div>
+                    </>
+                  )}
                 </>
               )}
             </Panel>
