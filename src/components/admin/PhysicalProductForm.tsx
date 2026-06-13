@@ -881,10 +881,11 @@ export function PhysicalProductForm({ product }: Props) {
                 Free shipping on this product
               </label>
               <p className="mt-1 text-xs text-slate-500">
-                Orders with only free-shipping products pay $0 delivery. Products
-                with a weight and without free shipping always use the flat
-                shipping rate, even when the order qualifies for free shipping
-                over the store threshold.
+                Orders with only free-shipping products pay $0 delivery. Light
+                items without a weight can also qualify for free shipping when
+                the order total exceeds the store threshold. Products with a
+                weight (laptops, monitors, chairs, etc.) always use the flat
+                shipping rate.
               </p>
               <div className="mt-4">
                 <RequiredLabel>Weight</RequiredLabel>

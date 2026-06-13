@@ -24,23 +24,23 @@ function cartQualifiesForProductFreeShipping(items: CheckoutLine[]): boolean {
   return shippable.every((item) => item.freeShipping);
 }
 
-/** Weighted physical items without free shipping always incur the flat rate. */
+/** Laptops and other weighted physical goods always incur shipping. */
+function cartHasWeightedShippableItems(items: CheckoutLine[]): boolean {
+  return items.some(
+    (item) =>
+      !item.noShippingRequired &&
+      item.weight != null &&
+      item.weight > 0
+  );
+}
+
 function cartQualifiesForThresholdFreeShipping(
   items: CheckoutLine[],
   afterDiscount: number,
   threshold: number
 ): boolean {
   if (afterDiscount < threshold) return false;
-
-  const hasWeightedPaidShippingItem = items.some(
-    (item) =>
-      !item.noShippingRequired &&
-      !item.freeShipping &&
-      item.weight != null &&
-      item.weight > 0
-  );
-
-  return !hasWeightedPaidShippingItem;
+  return true;
 }
 
 export function calculateCheckoutTotals(
@@ -63,8 +63,10 @@ export function calculateCheckoutTotals(
     afterDiscount,
     threshold
   );
-  const shipping =
-    freeShipping || productFreeShipping || thresholdFreeShipping ? 0 : flatRate;
+  const hasWeightedItems = cartHasWeightedShippableItems(items);
+  const qualifiesForFree =
+    !hasWeightedItems && (productFreeShipping || thresholdFreeShipping);
+  const shipping = freeShipping || qualifiesForFree ? 0 : flatRate;
 
   let tax = 0;
   if (settings.tax.enabled) {
@@ -83,7 +85,6 @@ export function calculateCheckoutTotals(
     shipping,
     tax,
     total,
-    freeShipping:
-      freeShipping || productFreeShipping || thresholdFreeShipping,
+    freeShipping: freeShipping || qualifiesForFree,
   };
 }
