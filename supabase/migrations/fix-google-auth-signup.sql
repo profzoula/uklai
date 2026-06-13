@@ -1,5 +1,6 @@
--- Support Google OAuth names on signup (full_name or name from provider metadata)
--- Superseded by fix-google-auth-signup.sql for production fixes
+-- Fix Google OAuth signup: robust profile trigger for Google metadata
+-- Run in Supabase SQL Editor if Google sign-in fails with
+-- "Database error saving new user"
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
@@ -20,7 +21,7 @@ BEGIN
   user_name := COALESCE(
     NEW.raw_user_meta_data->>'full_name',
     NEW.raw_user_meta_data->>'name',
-    NULLIF(split_part(user_email, '@', 1), '')
+    NULLIF(split_part(COALESCE(user_email, ''), '@', 1), '')
   );
   user_avatar := COALESCE(
     NEW.raw_user_meta_data->>'avatar_url',
@@ -38,7 +39,18 @@ BEGIN
   RETURN NEW;
 EXCEPTION
   WHEN OTHERS THEN
+    -- Do not block auth.users creation; app callback will upsert profile
     RAISE WARNING 'handle_new_user failed for %: %', NEW.id, SQLERRM;
     RETURN NEW;
 END;
 $$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
+
+GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.handle_new_user() TO postgres, service_role;

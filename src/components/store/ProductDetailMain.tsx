@@ -74,15 +74,17 @@ export function ProductDetailMain({
       : null;
 
   return (
-    <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 items-start">
-      <ProductGallery
-        images={displayGallery}
-        productName={product.name}
-        discountPercent={discountPercent}
-        preferredImage={selectedVariant?.image_url}
-      />
+    <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 items-start pb-20 lg:pb-0">
+      <div className="order-1 min-w-0">
+        <ProductGallery
+          images={displayGallery}
+          productName={product.name}
+          discountPercent={discountPercent}
+          preferredImage={selectedVariant?.image_url}
+        />
+      </div>
 
-      <div className="lg:row-span-2 lg:col-start-2 lg:row-start-1 lg:pt-1">
+      <div className="order-2 lg:row-span-2 lg:col-start-2 lg:row-start-1 lg:pt-1 min-w-0">
         {category && (
           <Link
             href={`/shop?category=${category.slug}`}
@@ -92,7 +94,7 @@ export function ProductDetailMain({
           </Link>
         )}
 
-        <h1 className="text-[1.65rem] leading-snug sm:text-[1.75rem] lg:text-3xl font-bold text-slate-900 tracking-tight">
+        <h1 className="text-xl leading-snug sm:text-[1.75rem] lg:text-3xl font-bold text-slate-900 tracking-tight">
           {product.name}
         </h1>
 
@@ -125,7 +127,7 @@ export function ProductDetailMain({
           </ul>
         )}
 
-        <div className="mt-6">
+        <div className="mt-6 hidden lg:block">
           <ProductActions
             product={displayProduct}
             variantId={selectedVariant?.id}
@@ -147,10 +149,24 @@ export function ProductDetailMain({
       </div>
 
       {detailsSection && (
-        <div className="lg:col-start-1 lg:row-start-2 min-w-0">
+        <div className="order-3 lg:order-none lg:col-start-1 lg:row-start-2 min-w-0">
           {detailsSection}
         </div>
       )}
+
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur-sm safe-bottom safe-x shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-4 py-3">
+        <ProductActions
+          product={displayProduct}
+          variantId={selectedVariant?.id}
+          variantLabel={selectedVariant?.color}
+          requireVariant={
+            isVariableProduct &&
+            availableVariants.length > 0 &&
+            !selectedVariant
+          }
+          compact
+        />
+      </div>
     </div>
   );
 }

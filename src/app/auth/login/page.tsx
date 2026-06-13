@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { safeAuthRedirect } from "@/lib/auth";
@@ -9,6 +9,7 @@ import {
   AuthDivider,
   GoogleSignInButton,
 } from "@/components/auth/GoogleSignInButton";
+import { AuthHashErrorHandler } from "@/components/auth/AuthHashErrorHandler";
 import { ShoppingBag } from "lucide-react";
 
 export default function LoginPage() {
@@ -24,6 +25,10 @@ export default function LoginPage() {
   const [error, setError] = useState(
     () => searchParams.get("error") ?? ""
   );
+
+  const handleHashError = useCallback((message: string) => {
+    setError(message);
+  }, []);
 
   const queryError = useMemo(() => {
     const code = searchParams.get("error");
@@ -60,6 +65,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+      <AuthHashErrorHandler onError={handleHashError} />
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2">

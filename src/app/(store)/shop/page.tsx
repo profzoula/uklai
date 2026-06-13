@@ -8,6 +8,7 @@ import {
 } from "@/lib/data";
 import { ProductCard } from "@/components/store/ProductCard";
 import { ShopSidebar } from "@/components/store/ShopSidebar";
+import { ShopMobileFilterShell } from "@/components/store/ShopMobileFilterShell";
 
 type Props = {
   searchParams: Promise<{
@@ -84,11 +85,20 @@ export default async function ShopPage({ searchParams }: Props) {
     q: searchQuery,
   };
 
+  const activeFilterCount = [
+    params.category,
+    collectionSlug,
+    isDeals,
+    isFeatured,
+    searchQuery,
+  ].filter(Boolean).length;
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-      <div className="grid lg:grid-cols-[260px_minmax(0,1fr)] gap-8 items-start">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+      <div className="grid lg:grid-cols-[260px_minmax(0,1fr)] gap-4 lg:gap-8 items-start">
         <div className="relative z-30 min-w-0">
-          <ShopSidebar
+          <ShopMobileFilterShell activeCount={activeFilterCount}>
+            <ShopSidebar
             categories={categories}
             customCollections={customCollections}
             searchQuery={searchQuery}
@@ -98,6 +108,7 @@ export default async function ShopPage({ searchParams }: Props) {
             isFeatured={isFeatured}
             filters={shopFilters}
           />
+          </ShopMobileFilterShell>
         </div>
 
         <div className="relative z-0 min-w-0">

@@ -173,8 +173,8 @@ export default function CartPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl font-bold text-slate-900 mb-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pb-28 lg:pb-12">
+      <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-6 sm:mb-8">
         Shopping Cart ({items.length})
       </h1>
 
@@ -263,7 +263,7 @@ export default function CartPage() {
           })}
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 h-fit sticky top-24">
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 h-fit lg:sticky lg:top-24">
           <h2 className="text-lg font-bold text-slate-900 mb-4">
             Order Summary
           </h2>
@@ -276,20 +276,20 @@ export default function CartPage() {
               <Tag className="w-4 h-4" aria-hidden="true" />
               Coupon code
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 id="coupon-code"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                 disabled={!!appliedCoupon}
                 placeholder="SAVE10"
-                className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm uppercase disabled:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="flex-1 min-h-[44px] px-3 py-2 border border-slate-200 rounded-lg text-sm uppercase disabled:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
               {appliedCoupon ? (
                 <button
                   type="button"
                   onClick={clearCoupon}
-                  className="px-3 py-2 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50"
+                  className="min-h-[44px] px-4 py-2 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50"
                 >
                   Remove
                 </button>
@@ -298,7 +298,7 @@ export default function CartPage() {
                   type="button"
                   onClick={applyCoupon}
                   disabled={applyingCoupon || !couponCode.trim()}
-                  className="px-3 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50"
+                  className="min-h-[44px] px-4 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50"
                 >
                   Apply
                 </button>
@@ -395,7 +395,7 @@ export default function CartPage() {
           <button
             onClick={handleCheckout}
             disabled={loading || paymentMethods.length === 0}
-            className="w-full mt-6 bg-primary text-white py-4 rounded-xl font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
+            className="hidden lg:flex w-full mt-6 bg-primary text-white py-4 rounded-xl font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 min-h-[48px] items-center justify-center"
           >
             {loading
               ? "Processing..."
@@ -412,6 +412,27 @@ export default function CartPage() {
             Secure checkout powered by Stripe
           </p>
         </div>
+      </div>
+
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur-sm safe-bottom safe-x shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-slate-500">Total</p>
+            <p className="text-lg font-bold text-slate-900 truncate">
+              {formatPrice(orderTotal)}
+            </p>
+          </div>
+          <button
+            onClick={handleCheckout}
+            disabled={loading || paymentMethods.length === 0}
+            className="shrink-0 min-h-[48px] px-6 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
+          >
+            {loading ? "Processing..." : "Checkout"}
+          </button>
+        </div>
+        {checkoutError && (
+          <p className="px-4 pb-2 text-xs text-red-600 text-center">{checkoutError}</p>
+        )}
       </div>
     </div>
   );

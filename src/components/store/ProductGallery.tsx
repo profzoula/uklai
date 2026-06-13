@@ -59,7 +59,7 @@ export function ProductGallery({
       {/* Thumbnails */}
       {gallery.length > 1 && (
         <div
-          className="order-2 sm:order-1 flex sm:flex-col gap-2 sm:gap-2.5 overflow-x-auto sm:overflow-y-auto sm:max-h-[min(520px,100%)] pb-1 sm:pb-0 sm:pr-0.5 scrollbar-hide"
+          className="order-2 sm:order-1 flex sm:flex-col gap-2 sm:gap-2.5 overflow-x-auto sm:overflow-y-auto sm:max-h-[min(520px,100%)] pb-1 sm:pb-0 sm:pr-0.5 scrollbar-hide snap-x snap-mandatory sm:snap-none"
           role="tablist"
           aria-label={`${productName} images`}
         >
@@ -75,6 +75,7 @@ export function ProductGallery({
                 onClick={() => setActiveIndex(index)}
                 className={cn(
                   THUMB_CLASS,
+                  "snap-start",
                   isActive
                     ? "border-primary shadow-sm"
                     : "border-slate-200 hover:border-slate-300"

@@ -2,6 +2,7 @@ import "server-only";
 
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { ensureProfileForUser } from "@/lib/profile-sync";
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -66,40 +67,6 @@ export async function getProfile() {
   }
 
   return ensureProfileForUser(user);
-}
-
-async function ensureProfileForUser(user: {
-  id: string;
-  email?: string | null;
-  user_metadata?: Record<string, unknown>;
-}) {
-  const email = user.email?.toLowerCase() ?? "";
-  const isAdmin = getAdminEmails().includes(email);
-
-  const row = {
-    id: user.id,
-    email: user.email ?? email,
-    full_name:
-      (user.user_metadata?.full_name as string | undefined) ??
-      (user.user_metadata?.name as string | undefined) ??
-      null,
-    avatar_url: (user.user_metadata?.avatar_url as string | undefined) ?? null,
-    is_admin: isAdmin,
-    updated_at: new Date().toISOString(),
-  };
-
-  const { createServiceClient } = await import("@/lib/supabase/service");
-  const service = createServiceClient();
-  if (!service) return null;
-
-  const { data, error } = await service
-    .from("profiles")
-    .upsert(row, { onConflict: "id" })
-    .select("*")
-    .single();
-
-  if (error) return null;
-  return data;
 }
 
 export async function requireAdmin() {

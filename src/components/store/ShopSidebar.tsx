@@ -62,7 +62,9 @@ export function ShopSidebar({
 
   return (
     <aside className="relative space-y-4 lg:sticky lg:top-24 lg:pr-1 overflow-visible">
-      <ShopSearchBar defaultQuery={searchQuery ?? ""} />
+      <div className="hidden lg:block">
+        <ShopSearchBar defaultQuery={searchQuery ?? ""} />
+      </div>
 
       {categories.length > 0 && (
         <ShopCategoryNav

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { safeAuthRedirect } from "@/lib/auth";
+import { safeAuthRedirect, getAuthCallbackUrl } from "@/lib/auth";
 import {
   AuthDivider,
   GoogleSignInButton,
@@ -36,7 +36,7 @@ export default function SignupPage() {
       password,
       options: {
         data: { full_name: fullName },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+        emailRedirectTo: getAuthCallbackUrl(nextPath),
       },
     });
 

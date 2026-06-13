@@ -137,10 +137,10 @@ export function DealOfTheDay({
   return (
     <section className="py-10 sm:py-12 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex gap-0 border border-slate-200 rounded-xl overflow-hidden bg-slate-50 shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-0 border border-slate-200 rounded-xl overflow-hidden bg-slate-50 shadow-sm">
           {/* Banner */}
-          <div className="flex flex-col shrink-0 w-[152px] sm:w-[168px] lg:w-[180px]">
-            <div className="flex-1 m-2 mb-0 rounded-lg border-4 border-[#fff200] bg-gradient-to-b from-[#0ea5e9] to-[#0046be] p-3 sm:p-4 flex flex-col justify-center text-center min-h-[200px]">
+          <div className="flex flex-row sm:flex-col shrink-0 w-full sm:w-[168px] lg:w-[180px]">
+            <div className="flex-1 m-2 mb-0 sm:mb-0 rounded-lg border-4 border-[#fff200] bg-gradient-to-b from-[#0ea5e9] to-[#0046be] p-3 sm:p-4 flex flex-col justify-center text-center min-h-[120px] sm:min-h-[200px] min-w-[140px] sm:min-w-0">
               <p className="text-[#fff200] font-extrabold text-sm sm:text-base leading-tight uppercase tracking-wide">
                 Deal of
                 <br />

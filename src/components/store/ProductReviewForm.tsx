@@ -83,13 +83,13 @@ export function ProductReviewForm({ productId, productSlug }: Props) {
             <label className="text-xs font-medium text-slate-600 block mb-1">
               Rating
             </label>
-            <div className="flex gap-1">
+            <div className="flex gap-0.5 sm:gap-1">
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
                   key={n}
                   type="button"
                   onClick={() => setRating(n)}
-                  className="p-0.5"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center"
                   aria-label={`${n} stars`}
                 >
                   <Star

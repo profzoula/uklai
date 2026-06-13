@@ -43,7 +43,7 @@ export function ProductBreadcrumbs({
         </>
       )}
       <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-      <span className="text-primary font-medium truncate max-w-[200px] sm:max-w-none">
+      <span className="text-primary font-medium line-clamp-2 sm:truncate sm:max-w-none">
         {product.name}
       </span>
     </nav>

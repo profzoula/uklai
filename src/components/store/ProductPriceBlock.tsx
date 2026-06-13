@@ -25,7 +25,7 @@ export function ProductPriceBlock({ product }: Props) {
           -{discount}%
         </span>
       )}
-      <p className="text-4xl sm:text-4xl font-bold text-red-600 leading-none">
+      <p className="text-3xl sm:text-4xl font-bold text-red-600 leading-none">
         {formatPrice(currentPrice)}
       </p>
       {onSale && regularPrice != null && (

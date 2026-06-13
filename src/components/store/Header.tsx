@@ -2,19 +2,18 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Search,
   Menu,
   X,
-  User,
   ShoppingCart,
-  ChevronDown,
   Store,
 } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { HeaderAccountLink } from "@/components/store/HeaderAccountLink";
 import { BrandLogo } from "@/components/store/BrandLogo";
+import { useAccountNav } from "@/hooks/useAccountNav";
 import { cn } from "@/lib/utils";
 
 const menuButtons = [
@@ -29,6 +28,16 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [query, setQuery] = useState("");
   const itemCount = useCartStore((s) => s.getItemCount());
+  const { href: accountHref, menuLabel: accountMenuLabel } = useAccountNav();
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mobileOpen]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -38,18 +47,17 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0046be] text-white shadow-md">
-      {/* Top row */}
+    <header className="sticky top-0 z-50 bg-[#0046be] text-white shadow-md safe-top">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3 sm:gap-4 h-14 sm:h-[60px]">
           <BrandLogo
-            className="rounded overflow-hidden"
+            className="rounded overflow-hidden shrink-0"
             onClick={() => setMobileOpen(false)}
           />
 
           <form
             onSubmit={handleSearch}
-            className="hidden sm:flex flex-1 max-w-3xl mx-auto"
+            className="hidden sm:flex flex-1 max-w-3xl mx-auto min-w-0"
           >
             <div className="relative w-full">
               <input
@@ -69,7 +77,7 @@ export function Header() {
             </div>
           </form>
 
-          <div className="flex items-center gap-1 sm:gap-2 ml-auto">
+          <div className="flex items-center gap-0.5 sm:gap-2 ml-auto shrink-0">
             <Link
               href="/shop"
               className="hidden lg:flex items-center gap-2 px-2 py-1 rounded hover:bg-white/10 transition-colors"
@@ -87,23 +95,25 @@ export function Header() {
 
             <Link
               href="/cart"
-              className="relative p-2 rounded hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fff200] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0046be]"
+              className="relative min-w-[44px] min-h-[44px] flex items-center justify-center rounded hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fff200] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0046be]"
               aria-label={
                 itemCount > 0 ? `Cart, ${itemCount} items` : "Cart, empty"
               }
             >
               <ShoppingCart className="w-6 h-6" strokeWidth={1.5} />
               {itemCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] bg-[#fff200] text-[#0046be] text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                <span className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-[#fff200] text-[#0046be] text-[10px] font-bold rounded-full flex items-center justify-center px-1">
                   {itemCount}
                 </span>
               )}
             </Link>
 
             <button
-              className="md:hidden p-2 rounded hover:bg-white/10 transition-colors"
+              type="button"
+              className="md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded hover:bg-white/10 transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
             >
               {mobileOpen ? (
                 <X className="w-6 h-6" />
@@ -114,7 +124,6 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile search */}
         <form onSubmit={handleSearch} className="sm:hidden pb-3">
           <div className="relative">
             <input
@@ -135,49 +144,45 @@ export function Header() {
         </form>
       </div>
 
-      {/* Bottom nav row */}
       <div className="hidden md:block border-t border-white/20">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center h-11 gap-2">
+          <div className="flex items-center justify-center h-11 gap-2 overflow-x-auto">
             {menuButtons.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className="inline-flex items-center gap-1 h-8 px-3 text-sm font-medium border border-white/70 rounded-full hover:bg-white/10 transition-colors whitespace-nowrap"
+                className="inline-flex items-center h-8 px-3 text-sm font-medium border border-white/70 rounded-full hover:bg-white/10 transition-colors whitespace-nowrap shrink-0"
               >
                 {item.label}
-                <ChevronDown className="w-3.5 h-3.5 opacity-80" />
               </Link>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Mobile menu */}
       <div
         className={cn(
           "md:hidden border-t border-white/20 bg-[#003da5] overflow-hidden transition-all duration-200",
-          mobileOpen ? "max-h-[480px]" : "max-h-0"
+          mobileOpen ? "max-h-[min(70vh,520px)]" : "max-h-0"
         )}
       >
-        <nav className="px-4 py-4 flex flex-col gap-1">
+        <nav className="px-4 py-4 flex flex-col gap-1 overflow-y-auto max-h-[min(70vh,520px)]">
           {menuButtons.map((item) => (
             <Link
               key={item.label}
               href={item.href}
-              className="flex items-center justify-between py-2.5 text-sm font-medium border-b border-white/10"
+              className="flex items-center py-3 min-h-[44px] text-sm font-medium border-b border-white/10"
               onClick={() => setMobileOpen(false)}
             >
               {item.label}
-              <ChevronDown className="w-4 h-4 opacity-60 -rotate-90" />
             </Link>
           ))}
           <Link
-            href="/auth/login"
-            className="mt-2 py-2.5 text-sm font-semibold text-[#fff200]"
+            href={accountHref}
+            className="mt-2 py-3 min-h-[44px] text-sm font-semibold text-[#fff200]"
             onClick={() => setMobileOpen(false)}
           >
-            Sign in to your account
+            {accountMenuLabel}
           </Link>
         </nav>
       </div>

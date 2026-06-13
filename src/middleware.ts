@@ -1,14 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { isInvalidAppHost } from "@/lib/app-url";
 
 function redirectInvalidHost(request: NextRequest): NextResponse | null {
   if (process.env.NODE_ENV !== "production") return null;
 
-  const host = request.headers.get("host") ?? "";
+  const host = request.headers.get("host")?.split(":")[0] ?? "";
   const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
 
-  const isInvalidHost = host.startsWith("0.0.0.0") || host.startsWith("127.0.0.1");
+  const isInvalidHost = isInvalidAppHost(host);
 
   if (!isInvalidHost || !appUrl) return null;
 

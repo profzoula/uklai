@@ -55,9 +55,11 @@ UPDATE profiles SET is_admin = true WHERE email = 'your@email.com';
 2. In [Google Cloud Console](https://console.cloud.google.com/), create an **OAuth 2.0 Client** (Web application)
 3. Add **Authorized redirect URI**: `https://<your-project>.supabase.co/auth/v1/callback`
 4. Copy Client ID and Client Secret into Supabase Google provider settings
-5. In Supabase → **Authentication** → **URL Configuration**, add:
-   - Site URL: `http://localhost:3000` (or your production domain)
-   - Redirect URLs: `http://localhost:3000/auth/callback` and your production callback URL
+5. In Supabase → **Authentication** → **URL Configuration**, set:
+   - **Site URL**: `https://uklai-production.up.railway.app` (your public domain — never `0.0.0.0`)
+   - **Redirect URLs**: `https://uklai-production.up.railway.app/auth/callback` and `http://localhost:3000/auth/callback`
+6. On **Railway**, set `NEXT_PUBLIC_APP_URL` to the same public URL (not `0.0.0.0:8080`)
+7. Run `supabase/migrations/fix-google-auth-signup.sql` in the Supabase SQL Editor (fixes “Database error saving new user” for Google sign-in)
 
 Students can then use **Continue with Google** on `/auth/login` and `/auth/signup`.
 
