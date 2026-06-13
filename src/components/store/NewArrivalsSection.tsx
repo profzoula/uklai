@@ -14,29 +14,14 @@ type Props = {
   description?: string | null;
 };
 
-function formatDropDate(iso: string): string {
-  const d = new Date(iso);
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${mm}/${dd}`;
-}
-
 function NewArrivalCard({ product }: { product: Product }) {
-  const dropDate = formatDropDate(product.created_at);
   const href = `/products/${product.slug}`;
 
   return (
-    <article className="snap-start shrink-0 w-[200px] h-[300px] sm:w-[210px] sm:h-[310px] bg-white rounded-xl overflow-hidden shadow-md grid grid-rows-[40px_140px_4.75rem_auto]">
-      <div className="bg-slate-100 px-3 flex items-center gap-2 border-b border-slate-200 row-start-1">
-        <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-        <p className="text-sm text-slate-600 truncate">
-          New <span className="font-bold text-slate-900">{dropDate}</span>
-        </p>
-      </div>
-
+    <article className="snap-start shrink-0 w-[200px] h-[260px] sm:w-[210px] sm:h-[270px] bg-white rounded-xl overflow-hidden shadow-md grid grid-rows-[150px_4.75rem_auto]">
       <Link
         href={href}
-        className="row-start-2 flex items-center justify-center px-3 bg-white overflow-hidden"
+        className="row-start-1 flex items-center justify-center px-3 bg-white overflow-hidden"
       >
         {product.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -52,13 +37,13 @@ function NewArrivalCard({ product }: { product: Product }) {
 
       <Link
         href={href}
-        className="row-start-3 px-3 pt-2 text-sm text-slate-800 line-clamp-3 leading-[1.35] hover:text-primary overflow-hidden"
+        className="row-start-2 px-3 pt-2 text-sm text-slate-800 line-clamp-3 leading-[1.35] hover:text-primary overflow-hidden"
         title={product.name}
       >
         {product.name}
       </Link>
 
-      <p className="row-start-4 px-3 pb-3 text-base font-bold text-slate-900">
+      <p className="row-start-3 px-3 pb-3 text-base font-bold text-slate-900">
         {formatPrice(product.price)}
       </p>
     </article>

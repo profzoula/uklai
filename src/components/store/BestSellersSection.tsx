@@ -9,6 +9,8 @@ import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
 
 const COLLECTION_SLUG = "best-sellers";
+const BANNER_SPOT_IMAGE =
+  "/media/spotbanner/ref-5922859-dfad75cd-ac31-432d-836c-64e32bab32cb.png";
 
 type Props = {
   products: Product[];
@@ -113,7 +115,6 @@ export function BestSellersSection({
 
   if (!products.length) return null;
 
-  const featured = products[0];
   const minPrice = Math.min(...products.map((p) => p.price));
   const bannerText =
     headline?.trim() ||
@@ -144,16 +145,14 @@ export function BestSellersSection({
               </Link>
             </div>
 
-            {featured.image_url && (
-              <div className="absolute right-4 sm:right-10 top-1/2 -translate-y-1/2 w-[140px] sm:w-[200px] lg:w-[240px] pointer-events-none">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={featured.image_url}
-                  alt={featured.name}
-                  className="w-full h-auto object-contain drop-shadow-2xl"
-                />
-              </div>
-            )}
+            <div className="absolute right-4 sm:right-10 top-1/2 -translate-y-1/2 w-[140px] sm:w-[200px] lg:w-[240px] pointer-events-none">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={BANNER_SPOT_IMAGE}
+                alt=""
+                className="w-full h-auto object-contain drop-shadow-2xl"
+              />
+            </div>
           </div>
 
           {/* Carousel */}
