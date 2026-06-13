@@ -1,6 +1,7 @@
 "use client";
 
 import { cn, formatPrice } from "@/lib/utils";
+import { getDisplayPrices } from "@/lib/product-pricing";
 import type { ProductVariant } from "@/types/database";
 
 type Props = {
@@ -31,6 +32,10 @@ export function ProductVariantSelector({
           const isSelected = variant.id === selectedId;
           const thumb = variant.image_url;
           const displayLabel = variant.color?.trim() || variant.sku || "Option";
+          const { currentPrice, regularPrice, onSale } = getDisplayPrices(
+            variant.price,
+            variant.compare_at_price
+          );
 
           return (
             <button
@@ -44,7 +49,11 @@ export function ProductVariantSelector({
                   : "border-slate-200 hover:border-slate-300"
               )}
               aria-pressed={isSelected}
-              aria-label={`${displayLabel}, ${formatPrice(variant.price)}`}
+              aria-label={
+                onSale && regularPrice != null
+                  ? `${displayLabel}, sale ${formatPrice(currentPrice)}, was ${formatPrice(regularPrice)}`
+                  : `${displayLabel}, ${formatPrice(currentPrice)}`
+              }
             >
               <div className="aspect-square flex items-center justify-center p-2 bg-slate-50">
                 {thumb ? (
@@ -60,10 +69,20 @@ export function ProductVariantSelector({
                   </span>
                 )}
               </div>
-              <div className="border-t border-slate-100 px-2 py-1.5 text-center">
-                <p className="text-sm font-bold text-slate-900">
-                  {formatPrice(variant.price)}
+              <div className="border-t border-slate-100 px-1.5 py-1.5 text-center leading-tight">
+                <p
+                  className={cn(
+                    "text-sm font-bold",
+                    onSale ? "text-red-600" : "text-slate-900"
+                  )}
+                >
+                  {formatPrice(currentPrice)}
                 </p>
+                {onSale && regularPrice != null && (
+                  <p className="text-[10px] text-slate-400 line-through mt-0.5">
+                    {formatPrice(regularPrice)}
+                  </p>
+                )}
               </div>
             </button>
           );
