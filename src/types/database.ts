@@ -4,8 +4,23 @@ export type Profile = {
   full_name: string | null;
   avatar_url: string | null;
   is_admin: boolean;
+  shipping_name?: string | null;
+  shipping_address?: string | null;
+  shipping_city?: string | null;
+  shipping_state?: string | null;
+  shipping_zip?: string | null;
+  shipping_country?: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type SavedShippingAddress = {
+  shipping_name: string;
+  shipping_address: string;
+  shipping_city: string;
+  shipping_state: string;
+  shipping_zip: string;
+  shipping_country: string;
 };
 
 export type Category = {

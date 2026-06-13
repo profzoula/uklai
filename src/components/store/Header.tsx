@@ -49,8 +49,9 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-[#0046be] text-white shadow-md safe-top">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3 sm:gap-4 h-14 sm:h-[60px]">
+        <div className="flex items-center gap-3 sm:gap-4 h-16 sm:h-[68px]">
           <BrandLogo
+            size="header"
             className="rounded overflow-hidden shrink-0"
             onClick={() => setMobileOpen(false)}
           />

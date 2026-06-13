@@ -30,7 +30,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
           <div className="lg:col-span-2">
-            <BrandLogo href="/" className="mb-4 rounded overflow-hidden" />
+            <BrandLogo href="/" size="footer" className="mb-4 rounded overflow-hidden" />
             <p className="text-sm leading-relaxed max-w-sm">
               Discover premium products at unbeatable prices curated for
               quality, comfort and style.

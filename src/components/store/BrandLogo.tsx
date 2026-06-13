@@ -8,17 +8,31 @@ type Props = {
   href?: string;
   className?: string;
   imageClassName?: string;
-  height?: number;
+  /** Visual size preset */
+  size?: "header" | "footer" | "compact";
   onClick?: () => void;
+};
+
+const sizeClasses = {
+  header: "h-10 sm:h-12 w-auto object-contain",
+  footer: "h-11 sm:h-12 w-auto object-contain",
+  compact: "h-8 sm:h-9 w-auto object-contain",
+};
+
+const intrinsicHeights = {
+  header: 48,
+  footer: 48,
+  compact: 36,
 };
 
 export function BrandLogo({
   href = "/",
   className,
   imageClassName,
-  height = 32,
+  size = "header",
   onClick,
 }: Props) {
+  const height = intrinsicHeights[size];
   const width = Math.round(height * 3.4);
 
   const image = (
@@ -27,8 +41,8 @@ export function BrandLogo({
       alt="Uklai"
       width={width}
       height={height}
-      className={cn("h-7 sm:h-8 w-auto object-contain", imageClassName)}
-      priority
+      className={cn(sizeClasses[size], imageClassName)}
+      priority={size === "header"}
     />
   );
 
