@@ -1,12 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { ChevronRight, Menu, Tag } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
+import { ChevronRight, Menu } from "lucide-react";
 import { getCategoryIcon } from "@/lib/category-icons";
+import { getDisplayPrices } from "@/lib/product-pricing";
 import { buildShopFilterHref, type ShopFilters } from "@/lib/shop-filter-href";
 import type { Category } from "@/types/database";
-import { cn } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
+
+type PreviewProduct = {
+  id: string;
+  name: string;
+  slug: string;
+  image_url: string | null;
+  price: number;
+  compare_at_price: number | null;
+};
 
 type Props = {
   categories: Category[];
@@ -17,6 +27,20 @@ type Props = {
   collectionSlug?: string;
 };
 
+function PreviewSkeleton() {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="animate-pulse">
+          <div className="aspect-square rounded-lg bg-slate-100" />
+          <div className="mt-2 h-3 rounded bg-slate-100" />
+          <div className="mt-1.5 h-4 w-16 rounded bg-slate-100" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ShopCategoryNav({
   categories,
   filters,
@@ -26,6 +50,9 @@ export function ShopCategoryNav({
   collectionSlug,
 }: Props) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [previewProducts, setPreviewProducts] = useState<PreviewProduct[]>([]);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+  const cacheRef = useRef<Map<string, PreviewProduct[]>>(new Map());
 
   const href = (overrides: Parameters<typeof buildShopFilterHref>[1]) =>
     buildShopFilterHref(filters, overrides);
@@ -42,16 +69,60 @@ export function ShopCategoryNav({
     );
   }
 
+  const loadPreview = useCallback(async (slug: string) => {
+    const cached = cacheRef.current.get(slug);
+    if (cached) {
+      setPreviewProducts(cached);
+      setLoadingPreview(false);
+      return;
+    }
+
+    setLoadingPreview(true);
+    try {
+      const res = await fetch(
+        `/api/shop/category-preview?slug=${encodeURIComponent(slug)}`
+      );
+      const data = (await res.json()) as { products?: PreviewProduct[] };
+      const products = data.products ?? [];
+      cacheRef.current.set(slug, products);
+      setPreviewProducts(products);
+    } catch {
+      setPreviewProducts([]);
+    } finally {
+      setLoadingPreview(false);
+    }
+  }, []);
+
+  function handleCategoryHover(categoryId: string, slug: string) {
+    setHoveredId(categoryId);
+    const cached = cacheRef.current.get(slug);
+    if (cached) {
+      setPreviewProducts(cached);
+      setLoadingPreview(false);
+    } else {
+      setPreviewProducts([]);
+      void loadPreview(slug);
+    }
+  }
+
   return (
     <div
       className="relative overflow-visible"
-      onMouseLeave={() => setHoveredId(null)}
+      onMouseLeave={() => {
+        setHoveredId(null);
+        setLoadingPreview(false);
+      }}
     >
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         <Link
-          href={href({ category: null, collection: null, deals: false, featured: false })}
+          href={href({
+            category: null,
+            collection: null,
+            deals: false,
+            featured: false,
+          })}
           className={cn(
-            "flex items-center gap-2.5 px-4 py-3 border-b border-slate-200 text-sm font-bold transition-colors",
+            "flex items-center gap-2.5 px-4 py-3 border-b border-slate-200 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset",
             isAllActive
               ? "bg-primary-light text-primary"
               : "text-slate-900 hover:bg-slate-50"
@@ -80,10 +151,10 @@ export function ShopCategoryNav({
                   deals: false,
                   featured: false,
                 })}
-                onMouseEnter={() => setHoveredId(cat.id)}
+                onMouseEnter={() => handleCategoryHover(cat.id, cat.slug)}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-2.5 text-sm border-b border-slate-100 last:border-b-0 transition-colors",
+                  "flex items-center gap-3 px-4 py-2.5 text-sm border-b border-slate-100 last:border-b-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset",
                   active || hovered
                     ? "bg-slate-100 text-slate-900 font-semibold"
                     : "text-slate-700 hover:bg-slate-50"
@@ -112,18 +183,13 @@ export function ShopCategoryNav({
 
       {hoveredCategory && (
         <div
-          className="hidden lg:block absolute left-full top-0 z-50 ml-1 w-[280px] rounded-xl border border-slate-200 bg-white shadow-xl p-4"
+          className="hidden lg:block absolute left-full top-0 z-50 ml-2 w-[min(560px,calc(100vw-320px))] max-h-[min(520px,55vh)] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl p-4"
           onMouseEnter={() => setHoveredId(hoveredCategory.id)}
         >
-          <p className="text-base font-bold text-slate-900">
-            {hoveredCategory.name}
-          </p>
-          {hoveredCategory.description && (
-            <p className="mt-1.5 text-sm text-slate-500 line-clamp-3">
-              {hoveredCategory.description}
-            </p>
-          )}
-          <div className="mt-4 space-y-1">
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <h3 className="text-base font-bold text-slate-900">
+              {hoveredCategory.name}
+            </h3>
             <Link
               href={href({
                 category: hoveredCategory.slug,
@@ -131,24 +197,58 @@ export function ShopCategoryNav({
                 deals: false,
                 featured: false,
               })}
-              className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary-light transition-colors"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary-dark shrink-0"
             >
-              Shop all
+              View all
               <ChevronRight className="w-4 h-4" />
             </Link>
-            <Link
-              href={href({
-                category: hoveredCategory.slug,
-                collection: null,
-                deals: true,
-                featured: false,
-              })}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
-            >
-              <Tag className="w-4 h-4 text-red-500" />
-              Deals in {hoveredCategory.name}
-            </Link>
           </div>
+
+          {loadingPreview ? (
+            <PreviewSkeleton />
+          ) : previewProducts.length === 0 ? (
+            <p className="text-sm text-slate-500 py-8 text-center">
+              No products in this category yet.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {previewProducts.map((product) => {
+                const { currentPrice } = getDisplayPrices(
+                  product.price,
+                  product.compare_at_price
+                );
+
+                return (
+                  <Link
+                    key={product.id}
+                    href={`/products/${product.slug}`}
+                    className="group rounded-lg border border-slate-100 p-2 hover:border-primary/30 hover:bg-slate-50/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    <div className="aspect-square rounded-md bg-slate-50 overflow-hidden flex items-center justify-center p-1.5">
+                      {product.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={product.image_url}
+                          alt={product.name}
+                          className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <span className="text-[10px] text-slate-400 text-center px-1">
+                          No image
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-2 text-xs text-slate-700 line-clamp-2 leading-snug min-h-[2rem]">
+                      {product.name}
+                    </p>
+                    <p className="mt-1 text-sm font-bold text-slate-900">
+                      {formatPrice(currentPrice)}
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

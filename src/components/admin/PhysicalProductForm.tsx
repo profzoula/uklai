@@ -168,7 +168,6 @@ export function PhysicalProductForm({ product }: Props) {
     stock_availability:
       (product?.stock ?? 0) > 0 ? "in_stock" : "out_of_stock",
     quantity: product?.stock?.toString() ?? "0",
-    no_shipping_required: product?.no_shipping_required ?? false,
     free_shipping: product?.free_shipping ?? false,
     weight: product?.weight?.toString() ?? "",
     color: product?.color ?? "",
@@ -246,8 +245,8 @@ export function PhysicalProductForm({ product }: Props) {
       meta_title: form.meta_title.trim() || form.name.trim(),
       meta_description: form.meta_description.trim() || null,
       weight: form.weight ? parseFloat(form.weight) : null,
-      no_shipping_required: form.no_shipping_required,
-      free_shipping: form.no_shipping_required ? false : form.free_shipping,
+      no_shipping_required: false,
+      free_shipping: form.free_shipping,
       color: form.color || null,
       size: form.size || null,
       featured: form.featured,
@@ -871,55 +870,37 @@ export function PhysicalProductForm({ product }: Props) {
               <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={form.no_shipping_required}
+                  checked={form.free_shipping}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      no_shipping_required: e.target.checked,
-                      free_shipping: e.target.checked ? false : form.free_shipping,
+                      free_shipping: e.target.checked,
                     })
                   }
                 />
-                No shipping required?
+                Free shipping on this product
               </label>
-              {!form.no_shipping_required && (
-                <>
-                  <label className="mt-3 flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.free_shipping}
-                      onChange={(e) =>
-                        setForm({
-                          ...form,
-                          free_shipping: e.target.checked,
-                        })
-                      }
-                    />
-                    Free shipping on this product
-                  </label>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Orders with only free-shipping products pay $0 delivery.
-                  </p>
-                  <div className="mt-4">
-                  <RequiredLabel>Weight</RequiredLabel>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={form.weight}
-                      onChange={(e) =>
-                        setForm({ ...form, weight: e.target.value })
-                      }
-                      className={`${inputClass} pr-10`}
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-                      lb
-                    </span>
-                  </div>
-                  </div>
-                </>
-              )}
+              <p className="mt-1 text-xs text-slate-500">
+                Orders with only free-shipping products pay $0 delivery.
+              </p>
+              <div className="mt-4">
+                <RequiredLabel>Weight</RequiredLabel>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={form.weight}
+                    onChange={(e) =>
+                      setForm({ ...form, weight: e.target.value })
+                    }
+                    className={`${inputClass} pr-10`}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                    lb
+                  </span>
+                </div>
+              </div>
             </Panel>
 
             <Panel title="Attribute group">
