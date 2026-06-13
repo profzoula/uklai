@@ -6,6 +6,7 @@ import type { Product } from "@/types/database";
 import { getDisplayPrices } from "@/lib/product-pricing";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
+import { WishlistButton } from "@/components/store/WishlistButton";
 
 type Props = {
   product: Product;
@@ -40,6 +41,13 @@ export function ProductCard({ product }: Props) {
             {product.badge}
           </span>
         )}
+        <div className="absolute top-2 right-2 lg:top-3 lg:right-3 z-10">
+          <WishlistButton
+            productId={product.id}
+            productName={product.name}
+            size="sm"
+          />
+        </div>
       </Link>
 
       <div className="p-3 sm:p-4 flex flex-col flex-1">

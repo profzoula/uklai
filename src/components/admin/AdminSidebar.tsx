@@ -138,6 +138,7 @@ export function AdminSidebar() {
           <div className="flex items-center gap-2.5">
             <BrandLogo
               href="/admin"
+              variant="blue"
               size="compact"
               className="rounded overflow-hidden"
               onClick={close}

@@ -10,7 +10,7 @@ import {
   GoogleSignInButton,
 } from "@/components/auth/GoogleSignInButton";
 import { AuthHashErrorHandler } from "@/components/auth/AuthHashErrorHandler";
-import { ShoppingBag } from "lucide-react";
+import { AuthBrandHeader } from "@/components/auth/AuthBrandHeader";
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
@@ -67,14 +67,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
       <AuthHashErrorHandler onError={handleHashError} />
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <ShoppingBag className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-slate-900">UKLAI</span>
-          </Link>
-        </div>
+        <AuthBrandHeader />
 
         <div className="bg-white rounded-2xl border border-slate-200 p-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-2">
@@ -103,9 +96,17 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-slate-700">
+                  Password
+                </label>
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-xs font-medium text-primary hover:text-primary-dark"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 type="password"
                 value={password}

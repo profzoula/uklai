@@ -9,7 +9,7 @@ import {
   AuthDivider,
   GoogleSignInButton,
 } from "@/components/auth/GoogleSignInButton";
-import { ShoppingBag } from "lucide-react";
+import { AuthBrandHeader } from "@/components/auth/AuthBrandHeader";
 
 export default function SignupPage() {
   const searchParams = useSearchParams();
@@ -79,14 +79,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <ShoppingBag className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-slate-900">UKLAI</span>
-          </Link>
-        </div>
+        <AuthBrandHeader />
 
         <div className="bg-white rounded-2xl border border-slate-200 p-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-2">

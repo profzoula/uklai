@@ -9,8 +9,10 @@ import {
   RotateCcw,
   Settings,
   MapPin,
+  Heart,
   HelpCircle,
   ShoppingBag,
+  Truck,
   LogOut,
   LayoutDashboard,
 } from "lucide-react";
@@ -26,9 +28,11 @@ const primaryLinks = [
   { href: "/account/returns", label: "Returns / refunds", shortLabel: "Returns", icon: RotateCcw },
   { href: "/account/settings", label: "Settings", shortLabel: "Settings", icon: Settings },
   { href: "/account/addresses", label: "Shipping address", shortLabel: "Address", icon: MapPin },
+  { href: "/account/wishlist", label: "Wishlist", shortLabel: "Wishlist", icon: Heart },
 ];
 
 const secondaryLinks = [
+  { href: "/track-order", label: "Track order", icon: Truck },
   { href: "/contact", label: "Help center", icon: HelpCircle },
   { href: "/shop", label: "Continue shopping", icon: ShoppingBag },
 ];

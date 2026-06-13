@@ -2,7 +2,7 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-import type { Order, ProductReview } from "@/types/database";
+import type { Order, Product, ProductReview } from "@/types/database";
 
 export async function getUserOrders(userId: string): Promise<Order[]> {
   if (!isSupabaseConfigured()) return [];
@@ -45,6 +45,31 @@ export async function getUserDigitalDownloads(userId: string) {
   }
 
   return downloads;
+}
+
+export async function getUserWishlistProducts(userId: string): Promise<Product[]> {
+  if (!isSupabaseConfigured()) return [];
+
+  const supabase = await createClient();
+  const { data: rows } = await supabase
+    .from("wishlist_items")
+    .select("product_id, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  const ids = (rows ?? []).map((row) => row.product_id);
+  if (ids.length === 0) return [];
+
+  const { data: products } = await supabase
+    .from("products")
+    .select("*")
+    .in("id", ids)
+    .eq("status", "published");
+
+  const byId = new Map((products ?? []).map((product) => [product.id, product]));
+  return ids
+    .map((id) => byId.get(id))
+    .filter((product): product is Product => Boolean(product));
 }
 
 export async function getApprovedReviewsForProduct(

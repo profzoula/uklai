@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { Order } from "@/types/database";
 import type { AllStoreSettings } from "@/lib/store-settings-types";
 import { formatPrice } from "@/lib/utils";
@@ -65,11 +64,12 @@ export function OrderInvoice({ order, store }: Props) {
       <article className="invoice-sheet bg-white border border-slate-200 rounded-2xl p-6 sm:p-10 shadow-sm print:shadow-none print:border-0 print:rounded-none print:p-0">
         <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6 pb-8 border-b border-slate-200">
           <div>
-            <Image
-              src="/media/uklai-logo.png"
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logoblue.svg"
               alt={store.store.name}
-              width={120}
-              height={36}
+              width={158}
+              height={66}
               className="h-8 w-auto object-contain"
             />
             <p className="mt-4 text-sm font-bold text-slate-900">

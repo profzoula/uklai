@@ -15,6 +15,7 @@ import { ProductVariantSelector } from "@/components/store/ProductVariantSelecto
 import { ProductActions } from "@/components/store/ProductActions";
 import { ProductDetailAccordion } from "@/components/store/ProductDetailAccordion";
 import { ProductShareRow } from "@/components/store/ProductShareRow";
+import { WishlistButton } from "@/components/store/WishlistButton";
 import type { AllStoreSettings } from "@/lib/store-settings-types";
 
 type Props = {
@@ -94,9 +95,16 @@ export function ProductDetailMain({
           </Link>
         )}
 
-        <h1 className="text-xl leading-snug sm:text-[1.75rem] lg:text-3xl font-bold text-slate-900 tracking-tight">
-          {product.name}
-        </h1>
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="text-xl leading-snug sm:text-[1.75rem] lg:text-3xl font-bold text-slate-900 tracking-tight">
+            {product.name}
+          </h1>
+          <WishlistButton
+            productId={product.id}
+            productName={product.name}
+            className="shrink-0 mt-1"
+          />
+        </div>
 
         <div className="mt-3">
           <ProductRating product={product} />
