@@ -14,6 +14,8 @@ import {
   getStripeCheckoutPaymentMethodTypes,
   stripeCheckoutCurrency,
 } from "@/lib/stripe-bnpl";
+import { buildStripeCheckoutLineItems } from "@/lib/checkout-stripe-line-items";
+import Stripe from "stripe";
 
 type CheckoutItem = {
   productId: string;
@@ -182,59 +184,18 @@ export async function POST(request: Request) {
       settings.payment
     );
 
-    const lineItems = items.map((item) => ({
-      price_data: {
-        currency,
-        product_data: {
-          name: item.name,
-          images: item.image ? [item.image] : [],
-        },
-        unit_amount: Math.round(item.price * 100),
-      },
-      quantity: item.quantity,
-    }));
-
-    if (totals.discount > 0 && appliedCouponCode) {
-      lineItems.push({
-        price_data: {
-          currency,
-          product_data: {
-            name: `Discount (${appliedCouponCode})`,
-            images: [],
-          },
-          unit_amount: -Math.round(totals.discount * 100),
-        },
-        quantity: 1,
-      });
-    }
-
-    if (totals.shipping > 0) {
-      lineItems.push({
-        price_data: {
-          currency,
-          product_data: { name: "Shipping", images: [] },
-          unit_amount: Math.round(totals.shipping * 100),
-        },
-        quantity: 1,
-      });
-    }
-
-    if (totals.tax > 0 && process.env.STRIPE_TAX_ENABLED !== "true") {
-      lineItems.push({
-        price_data: {
-          currency,
-          product_data: {
-            name: `Sales tax (${settings.tax.default_rate}%)`,
-            images: [],
-          },
-          unit_amount: Math.round(totals.tax * 100),
-        },
-        quantity: 1,
-      });
-    }
-
     const useStripeTax =
       process.env.STRIPE_TAX_ENABLED === "true" && settings.tax.enabled;
+
+    const lineItems = buildStripeCheckoutLineItems(
+      items,
+      currency,
+      totals.discount,
+      totals.shipping,
+      totals.tax,
+      `Sales tax (${settings.tax.default_rate}%)`,
+      !useStripeTax
+    );
 
     const session = await getStripe().checkout.sessions.create({
       mode: "payment",
@@ -285,8 +246,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error("Checkout error:", error);
+    const stripeMessage =
+      error instanceof Stripe.errors.StripeError
+        ? error.message
+        : error instanceof Error
+          ? error.message
+          : null;
     return NextResponse.json(
-      { error: "Checkout failed" },
+      { error: stripeMessage ?? "Checkout failed" },
       { status: 500 }
     );
   }
